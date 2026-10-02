@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}Profili Düzenle{% endblock %}
+
+{% block content %}
+<div class="container-xl py-4 py-lg-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4" data-reveal>
+        <div>
+            <div class="ekmek mb-1"><a href="{{ url_for('profil', id=kisi.id) }}"><i class="bi bi-arrow-left"></i> Profile dön</a></div>
+            <h1 class="fw-bold m-0" style="font-size:2rem">Profili düzenle</h1>
+        </div>
+        <a href="{{ url_for('ayarlar') }}" class="btn btn-ghost"><i class="bi bi-gear"></i>Hesap ayarları</a>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" data-yukleniyor id="profilForm">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="kart overflow-hidden" data-reveal>
+                    <div class="p-3">
+                        <label class="duzenle-kapak d-block mb-0" title="Kapak fotoğrafını değiştir">
+                            <img id="kapakOnizleme" src="{{ kisi.kapak_fotografi or '' }}" alt="" style="{{ '' if kisi.kapak_fotografi else 'display:none' }}">
+                            <span class="degistir"><i class="bi bi-camera"></i>Kapak fotoğrafı</span>
+                            <input type="file" name="kapak_gorsel" accept="image/*" data-onizle="kapakOnizleme">
+                        </label>
+                        <label class="duzenle-avatar d-block" title="Profil fotoğrafını değiştir">
+                            <img id="avatarOnizleme" src="{{ kisi.profil_fotografi or VARSAYILAN_AVATAR }}" alt="">
+                            <span class="degistir"><i class="bi bi-camera"></i></span>
+                            <input type="file" name="profil_gorsel" accept="image/*" data-onizle="avatarOnizleme">
+                        </label>
+                        <div class="d-flex flex-wrap gap-3 mt-2 small">
+                            {% if kisi.kapak_fotografi %}<label class="form-check"><input class="form-check-input" type="checkbox" name="kapak_kaldir" value="1"> <span class="form-check-label text-muted">Kapağı kaldır</span></label>{% endif %}
+                            <label class="form-check"><input class="form-check-input" type="checkbox" name="foto_kaldir" value="1"> <span class="form-check-label text-muted">Varsayılan profil fotoğrafını kullan</span></label>
+                        </div>
+                    </div>
+
+                    <div class="p-4 pt-2">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Ad Soyad</label>
+                                <div class="input-ikon"><i class="bi bi-person"></i><input class="form-control" name="ad_soyad" value="{{ kisi.ad_soyad }}" required maxlength="50" data-canli="onAd"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Unvan</label>
+                                <div class="input-ikon"><i class="bi bi-briefcase"></i><input class="form-control" name="unvan" value="{{ kisi.unvan or '' }}" maxlength="60" placeholder="Örn. Gömülü Yazılım Mühendisi" data-canli="onUnvan"></div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Biyografi</label>
+                                <textarea class="form-control" name="biyografi" rows="4" maxlength="300" placeholder="Kendinden bahset..." data-sayac="bioSayac" data-canli="onBio">{{ kisi.biyografi or '' }}</textarea>
+                                <div class="karakter-sayac mt-1" id="bioSayac"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Konum</label>
+                                <div class="input-ikon"><i class="bi bi-geo-alt"></i><input class="form-control" name="konum" value="{{ kisi.konum or '' }}" maxlength="60" placeholder="Örn. Ankara"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Web sitesi</label>
+                                <div class="input-ikon"><i class="bi bi-link-45deg"></i><input class="form-control" name="web_sitesi" value="{{ kisi.web_sitesi or '' }}" maxlength="200" placeholder="ornek.com"></div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">E-posta</label>
+                                <div class="input-ikon"><i class="bi bi-envelope"></i><input class="form-control" value="{{ kisi.eposta }}" disabled></div>
+                                <div class="form-text">E-posta ve şifreni <a href="{{ url_for('ayarlar', sekme='guvenlik') }}">Güvenlik</a> sekmesinden değiştirebilirsin.</div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top" style="border-color:var(--border)!important">
+                            <a href="{{ url_for('profil', id=kisi.id) }}" class="btn btn-ghost">Vazgeç</a>
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check2"></i>Değişiklikleri kaydet</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="yapiskan-yan">
+                    <div class="small-caps text-muted mb-2" data-reveal>Canlı önizleme</div>
+                    <div class="kart overflow-hidden" data-reveal style="--d:.08s">
+                        <div id="onKapak" style="height:110px;background:var(--gradient) center/cover;{% if kisi.kapak_fotografi %}background-image:url('{{ kisi.kapak_fotografi }}'){% endif %}"></div>
+                        <div class="px-4 pb-4" style="margin-top:-42px">
+                            <span class="avatar {{ 'halka' if kisi.mavi_tik }}" style="--s:84px"><img id="onAvatar" src="{{ kisi.profil_fotografi or VARSAYILAN_AVATAR }}" alt="" style="border:3px solid var(--surface)"></span>
+                            <h4 class="fw-bold mt-2 mb-0 d-flex align-items-center"><span id="onAd">{{ kisi.ad_soyad }}</span>{{ m.tik(kisi.mavi_tik) }}</h4>
+                            <div class="text-2 small" id="onUnvan">{{ kisi.unvan or '' }}</div>
+                            <p class="text-muted small mt-2 mb-0 pre-wrap" id="onBio">{{ kisi.biyografi or '' }}</p>
+                        </div>
+                    </div>
+                    {% if not kisi.mavi_tik %}
+                    <div class="bilgi-kutu mt-3" data-reveal style="--d:.12s"><i class="bi bi-patch-check"></i><div><strong class="text-main">Mavi tik</strong> ekip üyelerine ve doğrulanmış hesaplara yönetim ekibi tarafından verilir. <a href="{{ url_for('ayarlar', sekme='destek') }}">Başvur</a></div></div>
+                    {% else %}
+                    <div class="bilgi-kutu mt-3" data-reveal style="--d:.12s"><i class="bi bi-patch-check-fill" style="color:var(--verified)"></i><div>Hesabın <strong class="text-main">onaylı</strong>. Mavi tik adının yanında her yerde görünür.</div></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    document.querySelectorAll('[data-onizle]').forEach((inp) => inp.addEventListener('change', () => {
+        const f = inp.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = (e) => {
+            const hedef = document.getElementById(inp.dataset.onizle);
+            hedef.src = e.target.result; hedef.style.display = '';
+            if (inp.name === 'profil_gorsel') document.getElementById('onAvatar').src = e.target.result;
+            else document.getElementById('onKapak').style.backgroundImage = `url('${e.target.result}')`;
+        };
+        r.readAsDataURL(f);
+    }));
+    document.querySelectorAll('[data-canli]').forEach((inp) => inp.addEventListener('input', () => {
+        document.getElementById(inp.dataset.canli).textContent = inp.value;
+    }));
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+<script>
+(function () {
+    const { api, toast } = window.Aronsan;
+    document.addEventListener('click', async (e) => {
+        const b = e.target.closest('[data-admin-islem]');
+        if (!b) return;
+        const islem = b.dataset.adminIslem, id = b.dataset.id;
+        if (islem === 'sil' && !confirm('Bu kullanıcı ve tüm verileri kalıcı olarak silinecek. Emin misiniz?')) return;
+        if (islem === 'yetki' && !confirm('Kullanıcının yetkisi değiştirilsin mi?')) return;
+        b.disabled = true;
+        const v = await api(`/api/admin/kullanici/${id}`, { method: 'POST', json: { islem } });
+        b.disabled = false;
+        if (v.status !== 'success') return toast(v.mesaj || 'İşlem başarısız.', 'danger');
+        if (islem === 'mavi_tik') {
+            b.className = `btn btn-sm ${v.mavi_tik ? 'btn-ghost' : 'btn-outline-primary'}`;
+            b.innerHTML = `<i class="bi ${v.mavi_tik ? 'bi-patch-check-fill' : 'bi-patch-check'}"></i>${b.dataset.metinli ? (v.mavi_tik ? 'Onaylı' : 'Onayla') : ''}`;
+            const satir = b.closest('[data-kullanici-satir]') || b.closest('.kisi-satir');
+            satir?.querySelectorAll('.kisi-isim').forEach((isim) => {
+                const tik = isim.querySelector('.mavi-tik');
+                if (v.mavi_tik && !tik) isim.querySelector('span').insertAdjacentHTML('afterend', window.Aronsan.tikHTML(true));
+                if (!v.mavi_tik && tik) tik.remove();
+            });
+            toast(v.mavi_tik ? 'Mavi tik verildi.' : 'Mavi tik kaldırıldı.', 'success');
+        } else if (islem === 'yetki') {
+            b.innerHTML = v.yetki === 'personel' ? '<i class="bi bi-shield-fill-check"></i>Personel' : '<i class="bi bi-person"></i>Kullanıcı';
+            b.className = `btn btn-sm ${v.yetki === 'personel' ? 'btn-outline-primary' : 'btn-ghost'}`;
+            toast('Yetki güncellendi: ' + v.yetki, 'success');
+        } else if (islem === 'sil') {
+            const satir = b.closest('tr, .kisi-satir');
+            satir.style.transition = 'all .35s'; satir.style.opacity = 0;
+            setTimeout(() => satir.remove(), 350);
+            toast('Kullanıcı silindi.', 'success');
+        }
+    });
+})();
+</script>

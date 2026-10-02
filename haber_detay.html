@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}{{ haber.baslik }}{% endblock %}
+{% block description %}{{ haber.icerik[:155] }}{% endblock %}
+
+{% macro yorum_html(y, yanit=False) %}
+<div class="yorum" id="yorum-{{ y.id }}" data-yorum-id="{{ y.id }}">
+    {% if y.kullanici_id %}<a href="{{ url_for('profil', id=y.kullanici_id) }}">{{ m.avatar(y.profil_fotografi, 32 if yanit else 40) }}</a>
+    {% else %}{{ m.avatar(None, 32 if yanit else 40) }}{% endif %}
+    <div class="govde">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            {% if y.kullanici_id %}{{ m.isim(y.kullanici_id, y.ad, y.mavi_tik) }}{% else %}<span class="kisi-isim"><span>{{ y.ad }}</span></span>{% endif %}
+            <span class="small text-muted">· {{ y.tarih|zaman_once }}</span>
+        </div>
+        <div class="metin" data-etiket-isle>{{ y.yorum }}</div>
+        <div class="araclar">
+            <button class="{{ 'aktif' if y.begendim }}" data-yorum-begen="{{ y.id }}"><i class="bi {{ 'bi-heart-fill' if y.begendim else 'bi-heart' }}"></i><span>{{ y.begeni_sayisi or '' }}</span></button>
+            {% if aktif_kullanici %}<button data-yanitla="{{ y.ust_yorum_id or y.id }}" data-ad="{{ y.ad }}"><i class="bi bi-reply"></i>Yanıtla</button>{% endif %}
+            {% if aktif_kullanici and (aktif_kullanici.id == y.kullanici_id or aktif_kullanici.yetki == 'personel') %}
+            <button data-haber-yorum-sil="{{ y.id }}"><i class="bi bi-trash3"></i>Sil</button>
+            {% endif %}
+        </div>
+        {% if not yanit and y.yanitlar %}
+        <div class="yanitlar">
+            {% for r in y.yanitlar %}{{ yorum_html(r, True) }}{% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{% block content %}
+<article class="container-xl py-4 py-lg-5">
+    <div class="ekmek" data-reveal>
+        <a href="{{ url_for('index') }}"><i class="bi bi-house"></i></a><i class="bi bi-chevron-right small"></i>
+        <a href="{{ url_for('haberler') }}">Haberler</a><i class="bi bi-chevron-right small"></i>
+        <a href="{{ url_for('haberler', firma=haber.firma_adi) }}">{{ haber.firma_adi }}</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-9">
+            <div class="d-flex flex-wrap gap-2 mb-3" data-reveal>
+                <a href="{{ url_for('haberler', firma=haber.firma_adi) }}" class="etiket"><i class="bi bi-building"></i>{{ haber.firma_adi }}</a>
+                <span class="etiket notr"><i class="bi bi-clock"></i>{{ ((haber.icerik|length) // 900) + 1 }} dk okuma</span>
+                <span class="etiket notr"><i class="bi bi-eye"></i>{{ haber.goruntulenme or 0 }} görüntülenme</span>
+            </div>
+            <h1 class="fw-bold mb-4" style="font-size:clamp(1.9rem,4.2vw,3rem);line-height:1.15;--d:.05s" data-reveal>{{ haber.baslik }}</h1>
+
+            <div class="d-flex align-items-center gap-3 mb-4 pb-4 border-bottom" style="border-color:var(--border)!important" data-reveal>
+                {% if resmi %}
+                <a href="{{ url_for('profil', id=resmi.id) }}">{{ m.avatar(resmi.profil_fotografi, 48, halka=True) }}</a>
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2">
+                        {{ m.kisi(resmi) }}
+                        {% if aktif_kullanici and aktif_kullanici.id != resmi.id %}
+                        <span class="text-muted">·</span>
+                        <button class="btn-link-plain" data-takip="{{ resmi.id }}" data-stil="link" data-durum="{{ 1 if takip_resmi else 0 }}">Takip Et</button>
+                        {% endif %}
+                    </div>
+                    <div class="small text-muted">{{ haber.tarih|tarih_tr(True) }}</div>
+                </div>
+                {% endif %}
+                <button class="ikon-btn" data-kopyala="{{ request.url }}" title="Paylaş"><i class="bi bi-share"></i></button>
+            </div>
+        </div>
+    </div>
+
+    {% if haber.gorsel_url %}
+    <div class="row justify-content-center mb-5">
+        <div class="col-xl-11"><div class="makale-hero" data-reveal="olcek"><img src="{{ haber.gorsel_url }}" alt="{{ haber.baslik }}" data-isik style="cursor:zoom-in"></div></div>
+    </div>
+    {% endif %}
+
+    <div class="row justify-content-center g-4">
+        <div class="col-auto d-none d-lg-block">
+            <div class="makale-aksiyon">
+                <button class="ikon-btn {{ 'aktif-kalp' if begenildi_mi }}" id="begenBtn" title="Beğen"><i class="bi {{ 'bi-heart-fill' if begenildi_mi else 'bi-heart' }}"></i></button>
+                <small id="begenSayi">{{ begeni }}</small>
+                <a href="#yorumlar" class="ikon-btn" title="Yorumlar"><i class="bi bi-chat"></i></a>
+                <small>{{ yorum_sayisi }}</small>
+                <button class="ikon-btn {{ 'aktif-kayit' if kaydedildi_mi }}" id="kaydetBtn" title="Kaydet"><i class="bi {{ 'bi-bookmark-fill' if kaydedildi_mi else 'bi-bookmark' }}"></i></button>
+                <button class="ikon-btn mt-2" data-kopyala="{{ request.url }}" title="Bağlantıyı kopyala"><i class="bi bi-link-45deg"></i></button>
+            </div>
+        </div>
+
+        <div class="col-lg-8 col-xl-7">
+            <div class="makale-icerik {{ 'ilk-harf' if haber.icerik|length > 300 }}" data-reveal>{{ haber.icerik }}</div>
+
+            <!-- Mobil aksiyonlar -->
+            <div class="d-flex d-lg-none gap-2 mt-4">
+                <button class="btn btn-ghost flex-fill" data-mobil-begen><i class="bi {{ 'bi-heart-fill text-danger' if begenildi_mi else 'bi-heart' }}"></i><span data-begen-sayi-mobil>{{ begeni }}</span></button>
+                <a href="#yorumlar" class="btn btn-ghost flex-fill"><i class="bi bi-chat"></i>{{ yorum_sayisi }}</a>
+                <button class="btn btn-ghost flex-fill" data-mobil-kaydet><i class="bi {{ 'bi-bookmark-fill' if kaydedildi_mi else 'bi-bookmark' }}"></i>Kaydet</button>
+                <button class="btn btn-ghost" data-kopyala="{{ request.url }}"><i class="bi bi-share"></i></button>
+            </div>
+
+            <!-- YORUMLAR -->
+            <section id="yorumlar" class="mt-5 pt-4 border-top" style="border-color:var(--border)!important;scroll-margin-top:90px">
+                <h4 class="fw-bold mb-4">Yorumlar <span class="text-muted fw-normal fs-6">({{ yorum_sayisi }})</span></h4>
+
+                {% if aktif_kullanici %}
+                <form id="yorumForm" class="kart p-3 mb-4">
+                    <div class="yanit-bilgi" id="yanitBilgi"><span><i class="bi bi-reply me-1"></i><span id="yanitAd"></span> kişisine yanıt veriyorsun</span><button type="button" class="btn-link-plain" id="yanitIptal"><i class="bi bi-x-lg"></i></button></div>
+                    <div class="d-flex gap-3">
+                        {{ m.avatar(aktif_kullanici.profil_fotografi, 42) }}
+                        <div class="flex-grow-1">
+                            <textarea id="yorumInput" class="form-control" rows="2" maxlength="1000" placeholder="Düşüncelerini paylaş..." required></textarea>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <small class="text-muted">Saygılı ve yapıcı yorumlar topluluğumuzu güçlendirir.</small>
+                                <button type="submit" class="btn btn-primary btn-sm px-3"><i class="bi bi-send"></i>Gönder</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                {% else %}
+                <div class="bilgi-kutu mb-4"><i class="bi bi-chat-quote"></i><div>Yorum yapmak için <a href="{{ url_for('giris', next=request.path) }}" class="fw-semibold">giriş yap</a> ya da <a href="{{ url_for('kayit') }}" class="fw-semibold">ücretsiz hesap oluştur</a>.</div></div>
+                {% endif %}
+
+                <div id="yorumListe">
+                    {% for y in yorumlar %}{{ yorum_html(y) }}{% else %}
+                    <div class="bos-durum py-4" id="yorumBos"><div class="ikon"><i class="bi bi-chat-square-dots"></i></div><h5>Henüz yorum yok</h5><p class="mb-0">İlk yorumu sen yap!</p></div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+        <aside class="col-lg-3 d-none d-xl-block">
+            <div class="yapiskan-yan">
+                <h6 class="small-caps text-muted mb-3">İlgili Haberler</h6>
+                {% for h in ilgili %}
+                <a href="{{ url_for('haber_detay', id=h.id) }}" class="d-flex gap-3 mb-3 text-reset kisi-satir p-2">
+                    <div class="gorsel-kutu rounded-3 flex-shrink-0" style="width:78px;height:64px">{% if h.gorsel_url %}<img src="{{ h.gorsel_url }}" alt="">{% else %}<div class="gorsel-yok w-100 h-100" style="font-size:1.2rem"><i class="bi bi-newspaper"></i></div>{% endif %}</div>
+                    <div style="min-width:0"><div class="fw-semibold small line-clamp-2">{{ h.baslik }}</div><div class="small text-muted mt-1">{{ h.firma_adi }}</div></div>
+                </a>
+                {% else %}
+                <p class="small text-muted">Başka haber yok.</p>
+                {% endfor %}
+            </div>
+        </aside>
+    </div>
+</article>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const { api, toast, esc, avatarHTML, isimHTML, $, $$ } = window.Aronsan;
+    const HABER = {{ haber.id }};
+    const BEN = window.ARONSAN.kullanici;
+
+    async function begen() {
+        if (!BEN) return location.href = '/giris?next=' + location.pathname;
+        const v = await api(`/api/haber/${HABER}/begen`, { method: 'POST' });
+        if (v.status !== 'success') return;
+        const b = $('#begenBtn');
+        b.classList.toggle('aktif-kalp', v.begendim);
+        b.innerHTML = `<i class="bi ${v.begendim ? 'bi-heart-fill' : 'bi-heart'}"></i>`;
+        if (v.begendim) b.firstElementChild.style.animation = 'kalpAt .45s';
+        $('#begenSayi').textContent = v.begeni;
+        const mb = $('[data-mobil-begen]');
+        mb.innerHTML = `<i class="bi ${v.begendim ? 'bi-heart-fill text-danger' : 'bi-heart'}"></i><span>${v.begeni}</span>`;
+    }
+    async function kaydet() {
+        if (!BEN) return location.href = '/giris?next=' + location.pathname;
+        const v = await api(`/api/haber/${HABER}/kaydet`, { method: 'POST' });
+        if (v.status !== 'success') return;
+        const k = v.durum === 'kaydedildi';
+        $('#kaydetBtn').classList.toggle('aktif-kayit', k);
+        $('#kaydetBtn').innerHTML = `<i class="bi ${k ? 'bi-bookmark-fill' : 'bi-bookmark'}"></i>`;
+        $('[data-mobil-kaydet]').innerHTML = `<i class="bi ${k ? 'bi-bookmark-fill' : 'bi-bookmark'}"></i>${k ? 'Kaydedildi' : 'Kaydet'}`;
+        toast(k ? 'Haber kaydedilenlere eklendi.' : 'Kaydedilenlerden çıkarıldı.', k ? 'success' : 'info');
+    }
+    $('#begenBtn').addEventListener('click', begen);
+    $('[data-mobil-begen]').addEventListener('click', begen);
+    $('#kaydetBtn').addEventListener('click', kaydet);
+    $('[data-mobil-kaydet]').addEventListener('click', kaydet);
+
+    // @etiketleri vurgula
+    function etiketIsle(kok = document) {
+        $$('[data-etiket-isle]', kok).forEach((el) => {
+            const t = el.textContent;
+            if (!t.startsWith('@')) return;
+            const bosluk = t.indexOf(' ');
+            const etiket = bosluk > 0 ? t.slice(0, bosluk) : t;
+            el.innerHTML = `<span class="etiketlenen">${esc(etiket)}</span>${esc(bosluk > 0 ? t.slice(bosluk) : '')}`;
+            el.removeAttribute('data-etiket-isle');
+        });
+    }
+    etiketIsle();
+
+    // Yanıtla
+    let ustYorum = null;
+    const input = $('#yorumInput');
+    document.addEventListener('click', (e) => {
+        const y = e.target.closest('[data-yanitla]');
+        if (!y || !input) return;
+        ustYorum = parseInt(y.dataset.yanitla, 10);
+        $('#yanitAd').textContent = y.dataset.ad;
+        $('#yanitBilgi').classList.add('goster');
+        input.value = `@${y.dataset.ad.split(' ')[0]} `;
+        input.focus();
+        $('#yorumForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    $('#yanitIptal')?.addEventListener('click', () => { ustYorum = null; $('#yanitBilgi').classList.remove('goster'); input.value = ''; });
+
+    $('#yorumForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const yorum = input.value.trim();
+        if (!yorum) return;
+        const btn = e.submitter || $('#yorumForm [type=submit]');
+        window.Aronsan.butonYukleniyor(btn, true);
+        const v = await api(`/api/haber/${HABER}/yorum`, { method: 'POST', json: { yorum, ust_yorum_id: ustYorum } });
+        window.Aronsan.butonYukleniyor(btn, false);
+        if (v.status !== 'success') return toast(v.mesaj || 'Yorum gönderilemedi.', 'danger');
+        sessionStorage.setItem('aronsan_yorum_odak', v.id);
+        location.reload();
+    });
+
+    // Yeni yorumu vurgula
+    const odak = sessionStorage.getItem('aronsan_yorum_odak') || (location.hash.startsWith('#yorum-') ? location.hash.slice(7) : null);
+    if (odak) {
+        sessionStorage.removeItem('aronsan_yorum_odak');
+        const el = document.getElementById('yorum-' + odak);
+        if (el) { setTimeout(() => { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('vurgu'); }, 300); }
+    }
+
+    document.addEventListener('click', async (e) => {
+        const b = e.target.closest('[data-yorum-begen]');
+        if (b) {
+            if (!BEN) return location.href = '/giris?next=' + location.pathname;
+            const v = await api(`/api/haber_yorum/${b.dataset.yorumBegen}/begen`, { method: 'POST' });
+            if (v.status !== 'success') return;
+            b.classList.toggle('aktif', v.begendim);
+            b.innerHTML = `<i class="bi ${v.begendim ? 'bi-heart-fill' : 'bi-heart'}"></i><span>${v.begeni || ''}</span>`;
+            return;
+        }
+        const s = e.target.closest('[data-haber-yorum-sil]');
+        if (s) {
+            if (!confirm('Bu yorum (ve yanıtları) silinsin mi?')) return;
+            const v = await api(`/api/haber_yorum/${s.dataset.haberYorumSil}/sil`, { method: 'POST' });
+            if (v.status !== 'success') return toast(v.mesaj || 'Silinemedi.', 'danger');
+            const el = document.getElementById('yorum-' + s.dataset.haberYorumSil);
+            el.style.transition = 'all .35s'; el.style.opacity = 0; el.style.transform = 'translateX(20px)';
+            setTimeout(() => el.remove(), 350);
+            toast('Yorum silindi.', 'success');
+        }
+    });
+})();
+</script>
+{% endblock %}

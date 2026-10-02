@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}Hakkımızda{% endblock %}
+
+{% block content %}
+{{ m.sayfa_hero('Hakkımızda', 'Milli teknoloji hamlesinin <span class="gradient-text">genç gücü</span>', 'Aronsan; savunma sanayii ve havacılık alanında yerli çözümler üretmeyi hedefleyen bir teknoloji takımıdır.') }}
+
+<!-- HİKAYE -->
+<section class="bolum">
+    <div class="container-xl">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6" data-reveal="sol">
+                <span class="ust-etiket">Hikayemiz</span>
+                <h2 class="bolum-baslik">Merakla başlayan, mühendislikle büyüyen bir yolculuk</h2>
+                <p class="bolum-aciklama">Aronsan; Aselsan, Baykar, Roketsan gibi sektör öncülerinin açtığı yoldan ilham alan, teknolojiye tutkulu gençlerin bir araya gelmesiyle kuruldu.</p>
+                <p class="bolum-aciklama">Bugün otonom sistemler, gömülü yazılım ve yapay zekâ alanlarında projeler geliştirirken; aynı zamanda savunma sanayii meraklılarını tek bir çatı altında buluşturan bir topluluk platformu inşa ediyoruz.</p>
+            </div>
+            <div class="col-lg-6" data-reveal="sag">
+                <div class="row g-3">
+                    {% for deger, ad, ikon in [(istatistik.proje, 'Proje', 'bi-rocket-takeoff'), (istatistik.ekip, 'Ekip Üyesi', 'bi-people'), (istatistik.uye, 'Topluluk Üyesi', 'bi-globe2'), (istatistik.haber, 'Yayınlanan Haber', 'bi-newspaper')] %}
+                    <div class="col-6">
+                        <div class="kart kart-hover kart-govde text-center h-100 {{ 'mt-lg-4' if loop.index is even }}">
+                            <div class="ozellik-ikon mx-auto"><i class="bi {{ ikon }}"></i></div>
+                            <div class="display-font fw-bold gradient-text" style="font-size:2.4rem;line-height:1" data-sayac-hedef="{{ deger }}">0</div>
+                            <div class="text-muted small mt-2">{{ ad }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MİSYON VİZYON -->
+<section class="bolum pt-0">
+    <div class="container-xl">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="kart kart-hover kart-cizgi p-4 p-lg-5 h-100 parlama" data-reveal>
+                    <div class="ozellik-ikon"><i class="bi bi-bullseye"></i></div>
+                    <h3 class="fw-bold mb-3">Misyonumuz</h3>
+                    <p class="text-2 fs-5 mb-0" style="line-height:1.8">Türkiye'nin savunma sanayii ve havacılık ekosistemine katkı sağlamak amacıyla yenilikçi, güvenilir ve sürdürülebilir projeler geliştirmek; otonom sistemler alanında yerli bilgi birikimi oluşturmak.</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="kart kart-hover kart-cizgi p-4 p-lg-5 h-100 parlama" data-reveal style="--d:.1s">
+                    <div class="ozellik-ikon"><i class="bi bi-eye"></i></div>
+                    <h3 class="fw-bold mb-3">Vizyonumuz</h3>
+                    <p class="text-2 fs-5 mb-0" style="line-height:1.8">Sadece bir teknoloji takımı olmakla kalmayıp, savunma sanayii meraklılarını tek bir çatı altında toplayan, bilgi paylaşımını teşvik eden kapsamlı bir platform ve ilham kaynağı olmak.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DEĞERLER -->
+<section class="bolum" style="background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+    <div class="container-xl">
+        <div class="text-center mb-5">
+            <span class="ust-etiket" data-reveal>Değerlerimiz</span>
+            <h2 class="bolum-baslik" data-reveal style="--d:.05s">Bizi biz yapan ilkeler</h2>
+        </div>
+        <div class="row g-4">
+            {% for ikon, baslik, metin in [
+                ('bi-flag', 'Milli Duruş', 'Kritik teknolojilerde dışa bağımlılığı azaltacak yerli çözümler üretmeyi önceliğimiz sayıyoruz.'),
+                ('bi-lightbulb', 'İnovasyon', 'Her problemi yeni bir şey öğrenme ve daha iyisini tasarlama fırsatı olarak görüyoruz.'),
+                ('bi-people', 'Takım Ruhu', 'Farklı disiplinleri bir araya getirerek birlikte üretmenin gücüne inanıyoruz.'),
+                ('bi-shield-check', 'Güvenilirlik', 'Test edilmiş, belgelenmiş ve sahada güvenle çalışan sistemler geliştiriyoruz.'),
+                ('bi-mortarboard', 'Sürekli Öğrenme', 'Bilgiyi paylaşıyor, topluluğumuzla birlikte büyüyoruz.'),
+                ('bi-globe-americas', 'Açıklık', 'Topluluğumuzla şeffaf iletişim kuruyor, geri bildirimlere değer veriyoruz.')
+            ] %}
+            <div class="col-md-6 col-lg-4">
+                <div class="kart kart-hover kart-govde h-100" data-reveal style="--d: {{ (loop.index0 % 3) * 0.08 }}s" data-tilt>
+                    <div class="ozellik-ikon"><i class="bi {{ ikon }}"></i></div>
+                    <h5 class="fw-bold">{{ baslik }}</h5>
+                    <p class="text-muted mb-0" style="line-height:1.7">{{ metin }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ÇALIŞMA YÖNTEMİ -->
+<section class="bolum">
+    <div class="container-xl">
+        <div class="row g-5">
+            <div class="col-lg-5" data-reveal="sol">
+                <span class="ust-etiket">Nasıl Çalışıyoruz</span>
+                <h2 class="bolum-baslik">Fikirden sahaya beş adım</h2>
+                <p class="bolum-aciklama">Her projede aynı disiplinli süreci uyguluyoruz: ölç, tasarla, üret, test et, iyileştir.</p>
+                <a href="{{ url_for('projeler') }}" class="btn btn-primary mt-3">Projelerimizi gör <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="col-lg-7">
+                {% for baslik, metin in [
+                    ('Araştırma & Analiz', 'İhtiyacı, literatürü ve mevcut çözümleri inceleyerek gereksinimleri netleştiriyoruz.'),
+                    ('Tasarım', 'Sistem mimarisini, mekanik ve elektronik tasarımları dijital ortamda modelliyoruz.'),
+                    ('Prototipleme', 'Hızlı prototiplerle fikirlerimizi gerçek dünyada sınıyoruz.'),
+                    ('Test & Doğrulama', 'Simülasyon ve saha testleriyle performansı ölçüyor, verileri analiz ediyoruz.'),
+                    ('Entegrasyon & İyileştirme', 'Alt sistemleri bütünleştirip geri bildirimlerle sürekli geliştiriyoruz.')
+                ] %}
+                <div class="adim" data-reveal style="--d: {{ loop.index0 * 0.08 }}s">
+                    <div class="no">0{{ loop.index }}</div>
+                    <h5 class="fw-bold mb-1">{{ baslik }}</h5>
+                    <p class="text-muted mb-0">{{ metin }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="pb-5">
+    <div class="container-xl">
+        <div class="cta-kutu text-center" data-reveal="olcek">
+            <h2 class="display-6 fw-bold mb-3">Hikayemizin bir parçası ol</h2>
+            <p class="fs-5 mb-4 mx-auto" style="opacity:.9;max-width:620px">Topluluğumuza katıl, projelerimizi takip et ve fikirlerini paylaş.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <a href="{{ url_for('ekibimiz') }}" class="btn btn-light btn-lg"><i class="bi bi-people"></i>Ekibi tanı</a>
+                <a href="{{ url_for('iletisim') }}" class="btn btn-cam btn-lg">İletişime geç</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

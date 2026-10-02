@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}{{ personel.ad_soyad }}{% endblock %}
+
+{% block content %}
+<section class="container-xl py-5">
+    <div class="ekmek" data-reveal>
+        <a href="{{ url_for('index') }}"><i class="bi bi-house"></i></a><i class="bi bi-chevron-right small"></i>
+        <a href="{{ url_for('ekibimiz') }}">Ekibimiz</a><i class="bi bi-chevron-right small"></i><span>{{ personel.ad_soyad }}</span>
+    </div>
+    <div class="kart overflow-hidden" data-reveal="olcek">
+        <div class="row g-0">
+            <div class="col-md-5">
+                <div class="gorsel-kutu h-100" style="min-height:420px">
+                    {% if personel.gorsel_url %}<img src="{{ personel.gorsel_url }}" alt="{{ personel.ad_soyad }}" data-isik style="cursor:zoom-in">{% else %}<div class="gorsel-yok w-100 h-100"><i class="bi bi-person"></i></div>{% endif %}
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="p-4 p-lg-5 h-100 d-flex flex-column">
+                    <div class="d-flex flex-wrap gap-2 mb-3"><span class="etiket"><i class="bi bi-diagram-3"></i>{{ personel.departman }}</span><span class="etiket notr">Aronsan Ekibi</span></div>
+                    <h1 class="fw-bold mb-1 d-flex align-items-center" style="font-size:clamp(2rem,4vw,2.8rem)">{{ personel.ad_soyad }}{{ m.tik(personel.mavi_tik) }}</h1>
+                    <div class="fs-5 text-primary fw-semibold mb-4">{{ personel.rutbe }}</div>
+                    <h6 class="small-caps text-muted mb-2">Hakkında</h6>
+                    <p class="text-2 pre-wrap mb-4" style="line-height:1.85;font-size:1.03rem">{{ personel.biyografi }}</p>
+                    <div class="mt-auto d-flex flex-wrap gap-2">
+                        {% if personel.hesap_id %}
+                        <a href="{{ url_for('profil', id=personel.hesap_id) }}" class="btn btn-primary"><i class="bi bi-person-circle"></i>Platform profili</a>
+                        <a href="{{ url_for('mesaj_paneli', alici_id=personel.hesap_id) }}" class="btn btn-ghost"><i class="bi bi-chat-dots"></i>Mesaj gönder</a>
+                        {% endif %}
+                        {% if personel.linkedin %}<a href="{{ personel.linkedin }}" target="_blank" rel="noopener" class="ikon-btn"><i class="bi bi-linkedin"></i></a>{% endif %}
+                        {% if personel.github %}<a href="{{ personel.github }}" target="_blank" rel="noopener" class="ikon-btn"><i class="bi bi-github"></i></a>{% endif %}
+                        <button class="ikon-btn" data-kopyala="{{ request.url }}"><i class="bi bi-share"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if digerleri %}
+    <h4 class="fw-bold mt-5 mb-4" data-reveal>Ekipten diğerleri</h4>
+    <div class="row g-4">
+        {% for p in digerleri %}
+        <div class="col-6 col-lg-3">
+            <a href="{{ url_for('uye_detay', id=p.id) }}" class="kart kart-hover ekip-kart d-block text-reset" data-reveal style="--d: {{ loop.index0 * 0.07 }}s">
+                <div class="gorsel-kutu">{% if p.gorsel_url %}<img src="{{ p.gorsel_url }}" alt="" loading="lazy">{% else %}<div class="gorsel-yok w-100 h-100"><i class="bi bi-person"></i></div>{% endif %}</div>
+                <div class="p-3"><h6 class="fw-bold mb-1">{{ p.ad_soyad }}</h6><div class="small text-muted">{{ p.rutbe }}</div></div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

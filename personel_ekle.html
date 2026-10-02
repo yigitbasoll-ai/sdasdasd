@@ -1,0 +1,39 @@
+{% extends 'admin_base.html' %}
+{% block title %}{{ 'Ekip Üyesini Düzenle' if kayit else 'Yeni Ekip Üyesi' }} · Yönetim{% endblock %}
+
+{% block admin %}
+<div class="mb-4" data-reveal>
+    <div class="ekmek mb-1"><a href="{{ url_for('admin_ekip') }}"><i class="bi bi-arrow-left"></i> Ekip</a></div>
+    <h1 class="fw-bold m-0" style="font-size:1.9rem">{{ 'Ekip üyesini düzenle' if kayit else 'Vitrine ekip üyesi ekle' }}</h1>
+</div>
+<form method="POST" enctype="multipart/form-data" data-yukleniyor>
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <div class="kart kart-govde" data-reveal>
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label">Ad Soyad *</label><input class="form-control" name="ad_soyad" required value="{{ kayit.ad_soyad if kayit else '' }}"></div>
+                    <div class="col-md-6"><label class="form-label">Departman *</label><input class="form-control" name="departman" required list="depListe" value="{{ kayit.departman if kayit else '' }}" placeholder="Örn. Yazılım, Ar-Ge">
+                        <datalist id="depListe"><option>Yazılım</option><option>Elektronik</option><option>Mekanik</option><option>Ar-Ge</option><option>Tasarım</option><option>Yönetim</option></datalist></div>
+                    <div class="col-12"><label class="form-label">Rütbe / Görev *</label><input class="form-control" name="rutbe" required value="{{ kayit.rutbe if kayit else '' }}" placeholder="Örn. Kurucu, Sistem Mühendisi"></div>
+                    <div class="col-12"><label class="form-label">Biyografi *</label><textarea class="form-control" name="biyografi" rows="8" required placeholder="Kişinin geçmişi, yetenekleri ve projedeki rolü...">{{ kayit.biyografi if kayit else '' }}</textarea></div>
+                    <div class="col-md-6"><label class="form-label">LinkedIn</label><div class="input-ikon"><i class="bi bi-linkedin"></i><input class="form-control" name="linkedin" value="{{ kayit.linkedin if kayit and kayit.linkedin else '' }}" placeholder="https://linkedin.com/in/..."></div></div>
+                    <div class="col-md-6"><label class="form-label">GitHub</label><div class="input-ikon"><i class="bi bi-github"></i><input class="form-control" name="github" value="{{ kayit.github if kayit and kayit.github else '' }}" placeholder="https://github.com/..."></div></div>
+                    <div class="col-12">
+                        <label class="form-label">Platform hesabı ile bağla</label>
+                        <select class="form-select" name="kullanici_id">
+                            <option value="">— Bağlama —</option>
+                            {% for h in hesaplar %}<option value="{{ h.id }}" {{ 'selected' if kayit and kayit.kullanici_id == h.id }}>{{ h.ad_soyad }} ({{ h.eposta }})</option>{% endfor %}
+                        </select>
+                        <div class="form-text">Bağlanırsa ekip kartında mavi tik, profil ve mesaj bağlantısı görünür.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            {% include 'admin_gorsel_alani.html' %}
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-4"><i class="bi bi-check2"></i>{{ 'Değişiklikleri kaydet' if kayit else 'Ekip üyesini yayınla' }}</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

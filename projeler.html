@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}Projeler{% endblock %}
+
+{% block content %}
+{{ m.sayfa_hero('Projelerimiz', 'Milli sistemler, <span class="gradient-text">otonom teknolojiler</span>', 'İnsansız hava araçlarından yapay zekâ destekli görev sistemlerine kadar geliştirdiğimiz projeler.') }}
+
+<section class="bolum-sm">
+    <div class="container-xl">
+        {% set kategoriler = projeler|map(attribute='kategori')|select|unique|list %}
+        {% if projeler %}
+        <div class="d-flex flex-column flex-md-row gap-3 justify-content-between align-items-md-center mb-4" data-reveal>
+            <div class="cip-grup" id="projeFiltre">
+                <button class="cip aktif" data-filtre="*">Tümü <span class="opacity-75">({{ projeler|length }})</span></button>
+                {% for d in PROJE_DURUMLARI %}
+                {% set n = projeler|selectattr('durum', 'equalto', d)|list|length %}
+                {% if n %}<button class="cip" data-filtre="durum:{{ d }}">{{ d }} <span class="opacity-75">({{ n }})</span></button>{% endif %}
+                {% endfor %}
+                {% for k in kategoriler %}<button class="cip" data-filtre="kategori:{{ k }}">{{ k }}</button>{% endfor %}
+            </div>
+            <div class="input-ikon" style="min-width:260px"><i class="bi bi-search"></i><input class="form-control" id="projeAra" placeholder="Projelerde ara..."></div>
+        </div>
+        <div class="row g-4" id="projeIzgara">
+            {% for p in projeler %}
+            <div class="col-md-6 col-lg-4" data-durum="{{ p.durum or 'Geliştirme' }}" data-kategori="{{ p.kategori or '' }}" data-metin="{{ (p.baslik ~ ' ' ~ p.icerik)|lower }}">
+                {{ m.proje_kart(p, (loop.index0 % 3) * 0.08) }}
+            </div>
+            {% endfor %}
+        </div>
+        <div id="projeBos" style="display:none">{{ m.bos('bi-funnel', 'Eşleşen proje yok', 'Filtreleri değiştirmeyi deneyin.') }}</div>
+        {% else %}
+            {{ m.bos('bi-rocket-takeoff', 'Projeler yakında', 'Ekibimiz yeni projeler üzerinde çalışıyor. Takipte kalın!') }}
+        {% endif %}
+    </div>
+</section>
+
+<section class="pb-5">
+    <div class="container-xl">
+        <div class="kart cam p-4 p-lg-5" data-reveal>
+            <div class="row align-items-center g-4">
+                <div class="col-lg-8">
+                    <span class="ust-etiket">İş Birliği</span>
+                    <h3 class="fw-bold mb-2">Bir projeniz mi var?</h3>
+                    <p class="text-2 mb-0">Akademik çalışmalar, yarışmalar veya sanayi iş birlikleri için ekibimizle iletişime geçebilirsiniz.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end"><a href="{{ url_for('iletisim') }}" class="btn btn-primary btn-lg"><i class="bi bi-envelope"></i>Bize ulaşın</a></div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const kutular = Array.from(document.querySelectorAll('#projeIzgara > [data-durum]'));
+    if (!kutular.length) return;
+    let filtre = '*', q = '';
+    function uygula() {
+        let gorunen = 0;
+        kutular.forEach((k) => {
+            let ok = true;
+            if (filtre !== '*') { const [alan, deger] = filtre.split(':'); ok = k.dataset[alan] === deger; }
+            if (ok && q) ok = k.dataset.metin.includes(q);
+            k.style.display = ok ? '' : 'none';
+            if (ok) { gorunen++; const kart = k.firstElementChild; kart.classList.remove('gorundu'); requestAnimationFrame(() => kart.classList.add('gorundu')); }
+        });
+        document.getElementById('projeBos').style.display = gorunen ? 'none' : '';
+    }
+    document.querySelectorAll('#projeFiltre .cip').forEach((c) => c.addEventListener('click', () => {
+        document.querySelectorAll('#projeFiltre .cip').forEach((x) => x.classList.remove('aktif'));
+        c.classList.add('aktif'); filtre = c.dataset.filtre; uygula();
+    }));
+    document.getElementById('projeAra').addEventListener('input', (e) => { q = e.target.value.trim().toLocaleLowerCase('tr'); uygula(); });
+})();
+</script>
+{% endblock %}

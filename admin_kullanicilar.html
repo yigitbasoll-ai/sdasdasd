@@ -1,0 +1,58 @@
+{% extends 'admin_base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}Kullanıcılar · Yönetim{% endblock %}
+
+{% block admin %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4" data-reveal>
+    <div>
+        <h1 class="fw-bold mb-1" style="font-size:1.9rem">Kullanıcılar</h1>
+        <p class="text-muted m-0">{{ kullanicilar|length }} kullanıcı · Mavi tik, yetki ve hesap yönetimi</p>
+    </div>
+    <form class="input-ikon" style="min-width:280px"><i class="bi bi-search"></i><input name="q" class="form-control" value="{{ q }}" placeholder="İsim veya e-posta ara..."></form>
+</div>
+
+<div class="kart" data-reveal>
+    <div class="tablo-kutu">
+        <table class="tablo">
+            <thead><tr><th>Kullanıcı</th><th>Katılım</th><th>Durum</th><th>Mavi tik</th><th>Yetki</th><th></th></tr></thead>
+            <tbody>
+                {% for k in kullanicilar %}
+                <tr data-kullanici-satir>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="{{ url_for('profil', id=k.id) }}">{{ m.avatar(k.profil_fotografi, 38) }}</a>
+                            <div style="min-width:0">{{ m.isim(k.id, k.ad_soyad, k.mavi_tik) }}<div class="small text-muted">{{ k.eposta }} · #{{ k.id }}</div></div>
+                        </div>
+                    </td>
+                    <td class="text-nowrap small">{{ k.kayit_tarihi|tarih_tr }}</td>
+                    <td class="text-nowrap small">{% if cevrimici_mi(k) %}<span style="color:var(--success)"><i class="bi bi-circle-fill" style="font-size:.5rem"></i> Çevrimiçi</span>{% else %}{{ k.son_gorulme|zaman_once or '—' }}{% endif %}</td>
+                    <td><button class="btn btn-sm {{ 'btn-ghost' if k.mavi_tik else 'btn-outline-primary' }}" data-admin-islem="mavi_tik" data-id="{{ k.id }}" data-metinli="1"><i class="bi {{ 'bi-patch-check-fill' if k.mavi_tik else 'bi-patch-check' }}"></i>{{ 'Onaylı' if k.mavi_tik else 'Onayla' }}</button></td>
+                    <td>
+                        {% if k.id != aktif_kullanici.id %}
+                        <button class="btn btn-sm {{ 'btn-outline-primary' if k.yetki == 'personel' else 'btn-ghost' }}" data-admin-islem="yetki" data-id="{{ k.id }}">{% if k.yetki == 'personel' %}<i class="bi bi-shield-fill-check"></i>Personel{% else %}<i class="bi bi-person"></i>Kullanıcı{% endif %}</button>
+                        {% else %}<span class="etiket notr">Sen</span>{% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-ghost" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('profil', id=k.id) }}"><i class="bi bi-person"></i>Profili gör</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('mesaj_paneli', alici_id=k.id) }}"><i class="bi bi-chat-dots"></i>Mesaj gönder</a></li>
+                                {% if k.id != aktif_kullanici.id and k.id != RESMI_HESAP_ID %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><button class="dropdown-item tehlike" data-admin-islem="sil" data-id="{{ k.id }}"><i class="bi bi-trash3"></i>Hesabı sil</button></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-muted py-5">Kullanıcı bulunamadı.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}{% include 'admin_js.html' %}{% endblock %}

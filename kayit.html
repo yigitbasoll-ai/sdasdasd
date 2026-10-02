@@ -1,0 +1,50 @@
+{% extends 'auth_base.html' %}
+{% block title %}Kayıt Ol{% endblock %}
+
+{% block sol %}
+<span class="ust-etiket">Aramıza katıl</span>
+<h2 class="mb-4">Geleceğin teknolojilerini <span class="gradient-text">birlikte</span> konuşalım.</h2>
+<div class="auth-ozellik"><i class="bi bi-lightning-charge"></i><div><div class="fw-bold">Saniyeler içinde başla</div><div class="text-muted small">Yalnızca ad, e-posta ve şifre yeterli.</div></div></div>
+<div class="auth-ozellik"><i class="bi bi-people"></i><div><div class="fw-bold">Uzmanlarla tanış</div><div class="text-muted small">Onaylı ekip hesaplarını takip et.</div></div></div>
+<div class="auth-ozellik"><i class="bi bi-shield-check"></i><div><div class="fw-bold">Güvenli</div><div class="text-muted small">Şifren şifrelenerek saklanır.</div></div></div>
+{% endblock %}
+
+{% block form %}
+<h1 class="mb-2">Hesap oluştur</h1>
+<p class="text-muted mb-4">Zaten üye misin? <a href="{{ url_for('giris') }}" class="fw-semibold">Giriş yap</a></p>
+<form method="POST" data-yukleniyor id="kayitForm">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="mb-3">
+        <label class="form-label">Ad Soyad</label>
+        <div class="input-ikon"><i class="bi bi-person"></i><input class="form-control" name="ad_soyad" required minlength="2" maxlength="50" autofocus autocomplete="name" value="{{ ad_soyad or '' }}" placeholder="Adınız Soyadınız"></div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">E-posta adresi</label>
+        <div class="input-ikon"><i class="bi bi-envelope"></i><input type="email" class="form-control" name="eposta" required autocomplete="email" value="{{ eposta or '' }}" placeholder="ornek@mail.com"></div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Şifre</label>
+        <div class="input-ikon"><i class="bi bi-lock"></i><input type="password" class="form-control" name="sifre" required minlength="6" autocomplete="new-password" placeholder="En az 6 karakter" data-sifre-guc="kayitGuc"><button type="button" class="sifre-goster" aria-label="Şifreyi göster"><i class="bi bi-eye"></i></button></div>
+        <div class="sifre-guc" id="kayitGuc"><div></div></div>
+        <small id="kayitGucMetin" class="fw-semibold"></small>
+    </div>
+    <div class="mb-4">
+        <label class="form-label">Şifre (tekrar)</label>
+        <div class="input-ikon"><i class="bi bi-lock"></i><input type="password" class="form-control" name="sifre_tekrar" required minlength="6" autocomplete="new-password" placeholder="Şifrenizi tekrar girin"><button type="button" class="sifre-goster" aria-label="Şifreyi göster"><i class="bi bi-eye"></i></button></div>
+        <small class="text-danger d-none" id="eslesmeHata"><i class="bi bi-x-circle me-1"></i>Şifreler eşleşmiyor</small>
+    </div>
+    <label class="form-check mb-4"><input class="form-check-input" type="checkbox" required> <span class="form-check-label small text-2">Topluluk kurallarını okudum ve kabul ediyorum.</span></label>
+    <button type="submit" class="btn btn-primary btn-lg w-100"><i class="bi bi-person-plus"></i>Hesap oluştur</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const f = document.getElementById('kayitForm');
+    const s1 = f.sifre, s2 = f.sifre_tekrar, hata = document.getElementById('eslesmeHata');
+    const kontrol = () => { const farkli = s2.value && s1.value !== s2.value; hata.classList.toggle('d-none', !farkli); s2.setCustomValidity(farkli ? 'Şifreler eşleşmiyor' : ''); };
+    s1.addEventListener('input', kontrol); s2.addEventListener('input', kontrol);
+})();
+</script>
+{% endblock %}

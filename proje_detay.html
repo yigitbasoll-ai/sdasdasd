@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}{{ proje.baslik }}{% endblock %}
+{% block description %}{{ proje.icerik[:155] }}{% endblock %}
+
+{% block content %}
+<section class="sayfa-hero pb-5">
+    <div class="izgara-bg"></div>
+    <div class="hero-isik i1"></div>
+    <div class="container-xl">
+        <div class="ekmek" data-reveal>
+            <a href="{{ url_for('index') }}"><i class="bi bi-house"></i></a><i class="bi bi-chevron-right small"></i>
+            <a href="{{ url_for('projeler') }}">Projeler</a><i class="bi bi-chevron-right small"></i><span class="text-truncate" style="max-width:240px">{{ proje.baslik }}</span>
+        </div>
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="d-flex flex-wrap gap-2 mb-3" data-reveal>
+                    {{ m.durum_etiketi(proje.durum) }}
+                    {% if proje.kategori %}<span class="etiket notr"><i class="bi bi-tag"></i>{{ proje.kategori }}</span>{% endif %}
+                </div>
+                <h1 class="text-start" data-reveal style="--d:.06s">{{ proje.baslik }}</h1>
+                <p class="text-start mx-0 mb-4" data-reveal style="--d:.12s">Aronsan ekibi tarafından geliştirilen bu proje, {{ proje.tarih|tarih_tr }} tarihinde yayınlandı.</p>
+                <div class="d-flex flex-wrap gap-2" data-reveal style="--d:.18s">
+                    <a href="#detay" class="btn btn-primary"><i class="bi bi-arrow-down"></i>Detayları oku</a>
+                    <button class="btn btn-ghost" data-kopyala="{{ request.url }}"><i class="bi bi-share"></i>Paylaş</button>
+                </div>
+            </div>
+            <div class="col-lg-6" data-reveal="olcek" style="--d:.1s">
+                <div class="makale-hero" style="aspect-ratio:16/11">
+                    {% if proje.gorsel_url %}<img src="{{ proje.gorsel_url }}" alt="{{ proje.baslik }}" data-isik style="cursor:zoom-in">{% else %}<div class="gorsel-yok w-100 h-100"><i class="bi bi-cpu"></i></div>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bolum-sm" id="detay">
+    <div class="container-xl">
+        <div class="row g-5">
+            <div class="col-lg-8">
+                <span class="ust-etiket" data-reveal>Proje Hakkında</span>
+                <div class="makale-icerik {{ 'ilk-harf' if proje.icerik|length > 300 }}" data-reveal>{{ proje.icerik }}</div>
+            </div>
+            <div class="col-lg-4">
+                <div class="kart kart-govde yapiskan-yan" data-reveal>
+                    <h6 class="small-caps text-muted mb-3">Proje Künyesi</h6>
+                    <div class="ayar-satir py-2"><span class="text-muted">Durum</span>{{ m.durum_etiketi(proje.durum) }}</div>
+                    <div class="ayar-satir py-2"><span class="text-muted">Kategori</span><span class="fw-semibold">{{ proje.kategori or 'Genel' }}</span></div>
+                    <div class="ayar-satir py-2"><span class="text-muted">Yayın tarihi</span><span class="fw-semibold">{{ proje.tarih|tarih_tr }}</span></div>
+                    <div class="ayar-satir py-2"><span class="text-muted">Geliştirici</span><span class="fw-semibold">Aronsan Ekibi</span></div>
+                    {% set adimlar = ['Planlama', 'Geliştirme', 'Test', 'Tamamlandı'] %}
+                    {% set aktif = adimlar.index(proje.durum) if proje.durum in adimlar else 1 %}
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between small text-muted mb-2"><span>İlerleme</span><span>{{ ((aktif + 1) * 25) }}%</span></div>
+                        <div class="sifre-guc" style="height:8px"><div style="width:{{ (aktif + 1) * 25 }}%;background:var(--gradient)"></div></div>
+                    </div>
+                    <a href="{{ url_for('iletisim') }}" class="btn btn-primary w-100 mt-4"><i class="bi bi-chat-dots"></i>Proje hakkında soru sor</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if digerleri %}
+<section class="bolum-sm">
+    <div class="container-xl">
+        <h3 class="fw-bold mb-4" data-reveal>Diğer projeler</h3>
+        <div class="row g-4">
+            {% for p in digerleri %}<div class="col-md-6 col-lg-4">{{ m.proje_kart(p, loop.index0 * 0.08) }}</div>{% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}İletişim{% endblock %}
+
+{% block content %}
+{{ m.sayfa_hero('İletişim', 'Bizimle <span class="gradient-text">iletişime geçin</span>', 'Sorularınız, iş birliği teklifleriniz veya ekibimize katılma isteğiniz için bize yazın.') }}
+
+<section class="bolum-sm">
+    <div class="container-xl">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="d-flex flex-column gap-3">
+                    {% for ikon, baslik, deger, alt in [
+                        ('bi-envelope', 'E-posta', 'iletisim@aronsan.com', 'Genellikle 24 saat içinde yanıtlıyoruz.'),
+                        ('bi-chat-dots', 'Platform üzerinden', 'Doğrudan mesaj', 'Ekip üyelerimize mesaj gönderebilirsiniz.'),
+                        ('bi-geo-alt', 'Konum', 'Türkiye', 'Atölye ziyaretleri randevu ile.')
+                    ] %}
+                    <div class="kart kart-hover kart-govde d-flex gap-3 align-items-start" data-reveal style="--d: {{ loop.index0 * 0.08 }}s">
+                        <div class="ozellik-ikon mb-0 flex-shrink-0"><i class="bi {{ ikon }}"></i></div>
+                        <div>
+                            <div class="small text-muted">{{ baslik }}</div>
+                            <div class="fw-bold fs-5">{{ deger }}</div>
+                            <div class="small text-muted">{{ alt }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="kart kart-govde" data-reveal style="--d:.24s">
+                        <div class="small text-muted mb-2">Sosyal medya</div>
+                        <div class="sosyal">
+                            <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                            <a href="#" aria-label="X"><i class="bi bi-twitter-x"></i></a>
+                            <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                            <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="kart p-4 p-lg-5" data-reveal="sag">
+                    <h3 class="fw-bold mb-1">Mesaj gönderin</h3>
+                    <p class="text-muted mb-4">Tüm alanları doldurduğunuzdan emin olun.</p>
+                    <form method="POST" data-yukleniyor>
+                        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Ad Soyad *</label>
+                                <div class="input-ikon"><i class="bi bi-person"></i><input class="form-control" name="ad_soyad" required value="{{ aktif_kullanici.ad_soyad if aktif_kullanici else '' }}"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">E-posta *</label>
+                                <div class="input-ikon"><i class="bi bi-envelope"></i><input type="email" class="form-control" name="eposta" required value="{{ aktif_kullanici.eposta if aktif_kullanici else '' }}"></div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Konu</label>
+                                <select class="form-select" name="konu">
+                                    {% for k in ['Genel soru', 'İş birliği / Sponsorluk', 'Ekibe katılım', 'Basın', 'Teknik destek', 'Diğer'] %}
+                                    <option {{ 'selected' if request.args.get('konu') == k }}>{{ k }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Mesajınız *</label>
+                                <textarea class="form-control" name="mesaj" rows="6" maxlength="3000" required placeholder="Size nasıl yardımcı olabiliriz?" data-sayac="iletisimSayac"></textarea>
+                                <div class="karakter-sayac mt-1" id="iletisimSayac"></div>
+                            </div>
+                            <div class="col-12 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                                <small class="text-muted"><i class="bi bi-lock me-1"></i>Bilgileriniz yalnızca size dönüş yapmak için kullanılır.</small>
+                                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-send"></i>Gönder</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5" data-reveal>
+            <h3 class="fw-bold mb-4 text-center">Sıkça sorulan sorular</h3>
+            <div class="accordion mx-auto" id="sss" style="max-width:820px">
+                {% for s, c in [
+                    ('Aronsan nedir?', 'Aronsan; savunma sanayii, otonom sistemler ve havacılık alanında projeler geliştiren bir teknoloji takımı ve aynı zamanda bu alana ilgi duyanları buluşturan bir topluluk platformudur.'),
+                    ('Platforma nasıl üye olurum?', 'Sağ üstteki "Katıl" butonuna tıklayarak birkaç saniye içinde ücretsiz hesap oluşturabilirsiniz.'),
+                    ('Mavi tik nasıl alınır?', 'Mavi tik; ekip üyelerine, doğrulanmış kurumlara ve topluluğa önemli katkı sağlayan hesaplara yönetim ekibi tarafından verilir.'),
+                    ('Ekibe nasıl katılabilirim?', 'Bu formda konu olarak "Ekibe katılım" seçip kendinizi ve ilgi alanlarınızı anlatan bir mesaj göndermeniz yeterli.')
+                ] %}
+                <div class="kart mb-2 overflow-hidden">
+                    <button class="w-100 text-start p-3 px-4 bg-transparent border-0 d-flex justify-content-between align-items-center fw-semibold" style="color:var(--text)" data-bs-toggle="collapse" data-bs-target="#sss{{ loop.index }}">
+                        {{ s }} <i class="bi bi-plus-lg"></i>
+                    </button>
+                    <div id="sss{{ loop.index }}" class="collapse" data-bs-parent="#sss"><div class="px-4 pb-3 text-2">{{ c }}</div></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

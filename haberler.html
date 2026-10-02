@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}Haberler{% endblock %}
+
+{% block content %}
+{{ m.sayfa_hero('Sektör Haberleri', 'Savunma sanayiinden <span class="gradient-text">son gelişmeler</span>', 'Türk savunma ve havacılık ekosisteminden seçilmiş güncel haberler, analizler ve duyurular.') }}
+
+<section class="bolum-sm">
+    <div class="container-xl">
+        <div class="d-flex flex-column flex-lg-row gap-3 justify-content-between align-items-lg-center mb-4" data-reveal>
+            <div class="cip-grup">
+                <a href="{{ url_for('haberler', q=q or None) }}" class="cip {{ 'aktif' if not secili_firma }}">Tümü</a>
+                {% for f in firmalar %}
+                <a href="{{ url_for('haberler', firma=f, q=q or None) }}" class="cip {{ 'aktif' if secili_firma == f }}">{{ f }}</a>
+                {% endfor %}
+            </div>
+            <form class="input-ikon" style="min-width:280px" method="GET">
+                {% if secili_firma %}<input type="hidden" name="firma" value="{{ secili_firma }}">{% endif %}
+                <i class="bi bi-search"></i>
+                <input name="q" class="form-control" placeholder="Haberlerde ara..." value="{{ q }}">
+            </form>
+        </div>
+
+        {% if q or secili_firma %}
+        <p class="text-muted mb-4" data-reveal><strong class="text-main">{{ haberler|length }}</strong> haber bulundu{% if q %} · "<em>{{ q }}</em>"{% endif %}{% if secili_firma %} · {{ secili_firma }}{% endif %}
+            <a href="{{ url_for('haberler') }}" class="ms-2"><i class="bi bi-x-circle"></i> Filtreleri temizle</a></p>
+        {% endif %}
+
+        {% if haberler %}
+            {% set one_cikan = haberler[0] %}
+            {% if not q and not secili_firma %}
+            <a href="{{ url_for('haber_detay', id=one_cikan.id) }}" class="kart kart-hover d-block overflow-hidden mb-4 text-reset parlama" data-reveal>
+                <div class="row g-0">
+                    <div class="col-lg-7"><div class="gorsel-kutu h-100" style="min-height:300px">{% if one_cikan.gorsel_url %}<img src="{{ one_cikan.gorsel_url }}" alt="">{% else %}<div class="gorsel-yok w-100 h-100"><i class="bi bi-newspaper"></i></div>{% endif %}</div></div>
+                    <div class="col-lg-5 p-4 p-lg-5 d-flex flex-column">
+                        <div class="d-flex gap-2 mb-3"><span class="etiket"><i class="bi bi-lightning-charge-fill"></i>Öne Çıkan</span><span class="etiket notr">{{ one_cikan.firma_adi }}</span></div>
+                        <h2 class="fw-bold mb-3" style="font-size:1.8rem">{{ one_cikan.baslik }}</h2>
+                        <p class="text-2 line-clamp-3">{{ one_cikan.icerik }}</p>
+                        <div class="mt-auto d-flex justify-content-between align-items-center pt-3 text-muted small">
+                            <span><i class="bi bi-calendar3 me-1"></i>{{ one_cikan.tarih|tarih_tr }}</span>
+                            <span class="meta-ikonlar"><span><i class="bi bi-heart"></i>{{ one_cikan.begeni_sayisi }}</span><span><i class="bi bi-chat"></i>{{ one_cikan.yorum_sayisi }}</span><span><i class="bi bi-eye"></i>{{ one_cikan.goruntulenme|sayi }}</span></span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% set liste = haberler[1:] %}
+            {% else %}
+            {% set liste = haberler %}
+            {% endif %}
+            <div class="row g-4">
+                {% for h in liste %}
+                <div class="col-md-6 col-lg-4">{{ m.haber_kart(h, (loop.index0 % 3) * 0.07) }}</div>
+                {% endfor %}
+            </div>
+        {% else %}
+            {{ m.bos('bi-search', 'Sonuç bulunamadı', 'Farklı bir anahtar kelime veya firma deneyin.', 'Tüm haberler', url_for('haberler')) }}
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

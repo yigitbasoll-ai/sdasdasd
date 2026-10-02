@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}{{ 'Arama: ' ~ q if q else 'Arama' }}{% endblock %}
+
+{% block content %}
+<div class="container-xl py-5">
+    <div class="mx-auto mb-5" style="max-width:720px" data-reveal>
+        <h1 class="fw-bold mb-3 text-center">Arama</h1>
+        <form method="GET" class="input-ikon">
+            <i class="bi bi-search"></i>
+            <input name="q" class="form-control form-control-lg" style="padding-left:2.8rem;border-radius:16px" placeholder="Kişi, haber, proje veya gönderi ara..." value="{{ q }}" autofocus>
+        </form>
+    </div>
+
+    {% if q %}
+        {% set toplam = sonuc.kisiler|length + sonuc.haberler|length + sonuc.projeler|length + sonuc.gonderiler|length %}
+        <p class="text-muted text-center mb-4">"<strong class="text-main">{{ q }}</strong>" için {{ toplam }} sonuç bulundu</p>
+        {% if toplam == 0 %}
+            {{ m.bos('bi-search', 'Sonuç bulunamadı', 'Farklı anahtar kelimelerle tekrar deneyin.') }}
+        {% endif %}
+
+        {% if sonuc.kisiler %}
+        <h5 class="fw-bold mb-3"><i class="bi bi-people me-2 text-primary"></i>Kişiler</h5>
+        <div class="row g-3 mb-5">
+            {% for k in sonuc.kisiler %}
+            <div class="col-md-6 col-lg-4"><div class="kart p-2" data-reveal style="--d: {{ (loop.index0 % 3) * 0.05 }}s">{{ m.kisi_satir(k) }}</div></div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if sonuc.haberler %}
+        <h5 class="fw-bold mb-3"><i class="bi bi-newspaper me-2 text-primary"></i>Haberler</h5>
+        <div class="row g-4 mb-5">
+            {% for h in sonuc.haberler %}<div class="col-md-6 col-lg-4">{{ m.haber_kart(h, (loop.index0 % 3) * 0.06) }}</div>{% endfor %}
+        </div>
+        {% endif %}
+
+        {% if sonuc.projeler %}
+        <h5 class="fw-bold mb-3"><i class="bi bi-rocket-takeoff me-2 text-primary"></i>Projeler</h5>
+        <div class="row g-4 mb-5">
+            {% for p in sonuc.projeler %}<div class="col-md-6 col-lg-4">{{ m.proje_kart(p, (loop.index0 % 3) * 0.06) }}</div>{% endfor %}
+        </div>
+        {% endif %}
+
+        {% if sonuc.gonderiler %}
+        <h5 class="fw-bold mb-3"><i class="bi bi-chat-square-text me-2 text-primary"></i>Gönderiler</h5>
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-7 d-flex flex-column gap-4">
+                {% for gd in sonuc.gonderiler %}{{ m.gonderi_kart(gd) }}{% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+        {{ m.bos('bi-compass', 'Ne aramak istersin?', 'Topluluk üyelerini, haberleri, projeleri ve gönderileri tek yerden ara.') }}
+    {% endif %}
+</div>
+{% endblock %}

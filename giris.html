@@ -1,0 +1,33 @@
+{% extends 'auth_base.html' %}
+{% block title %}Giriş Yap{% endblock %}
+
+{% block sol %}
+<span class="ust-etiket">Tekrar hoş geldin</span>
+<h2 class="mb-4">Savunma teknolojileri topluluğuna <span class="gradient-text">geri dön.</span></h2>
+<div class="auth-ozellik"><i class="bi bi-grid-1x2"></i><div><div class="fw-bold">Topluluk akışı</div><div class="text-muted small">Takip ettiklerinin paylaşımlarını kaçırma.</div></div></div>
+<div class="auth-ozellik"><i class="bi bi-chat-dots"></i><div><div class="fw-bold">Anlık mesajlaşma</div><div class="text-muted small">Ekip üyeleriyle doğrudan iletişim kur.</div></div></div>
+<div class="auth-ozellik"><i class="bi bi-bookmark-star"></i><div><div class="fw-bold">Kişisel kitaplık</div><div class="text-muted small">Beğendiğin haberleri kaydet, sonra oku.</div></div></div>
+{% endblock %}
+
+{% block form %}
+<h1 class="mb-2">Giriş yap</h1>
+<p class="text-muted mb-4">Hesabın yok mu? <a href="{{ url_for('kayit') }}" class="fw-semibold">Ücretsiz kayıt ol</a></p>
+<form method="POST" data-yukleniyor>
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="mb-3">
+        <label class="form-label">E-posta adresi</label>
+        <div class="input-ikon"><i class="bi bi-envelope"></i><input type="email" class="form-control" name="eposta" required autofocus autocomplete="email" value="{{ eposta or '' }}" placeholder="ornek@mail.com"></div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Şifre</label>
+        <div class="input-ikon"><i class="bi bi-lock"></i><input type="password" class="form-control" name="sifre" required autocomplete="current-password" placeholder="••••••••"><button type="button" class="sifre-goster" aria-label="Şifreyi göster"><i class="bi bi-eye"></i></button></div>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <label class="form-check m-0"><input class="form-check-input" type="checkbox" name="hatirla" value="1" checked> <span class="form-check-label small text-2">Beni hatırla</span></label>
+        <a href="{{ url_for('iletisim', konu='Teknik destek') }}" class="small">Şifremi unuttum</a>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg w-100"><i class="bi bi-box-arrow-in-right"></i>Giriş yap</button>
+</form>
+<div class="ayirici">veya</div>
+<a href="{{ url_for('personel_giris') }}" class="btn btn-ghost w-100"><i class="bi bi-shield-lock"></i>Personel girişi</a>
+{% endblock %}

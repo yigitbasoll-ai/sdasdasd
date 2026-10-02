@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}Milli Teknoloji Hamlesi{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="hero">
+    <div class="izgara-bg"></div>
+    <canvas id="heroCanvas"></canvas>
+    <div class="hero-isik i1"></div>
+    <div class="hero-isik i2"></div>
+    <div class="container-xl">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <div class="hero-rozet" data-reveal><span class="nokta">YENİ</span>Aronsan topluluk platformu yayında <i class="bi bi-arrow-right"></i></div>
+                <h1 data-reveal style="--d:.08s">Geleceğin savunma teknolojilerini<br><span class="gradient-text" id="yazici">otonom sistemlerle</span><span class="yazici-imlec"></span></h1>
+                <p class="alt-baslik" data-reveal style="--d:.16s">Türkiye'nin savunma sanayii vizyonuna uygun; insansız sistemler, yapay zekâ ve havacılık teknolojileri geliştiren genç ve tutkulu bir mühendislik takımıyız.</p>
+                <div class="d-flex flex-wrap gap-3 mb-5" data-reveal style="--d:.24s">
+                    <a href="{{ url_for('projeler') }}" class="btn btn-primary btn-lg"><i class="bi bi-rocket-takeoff"></i>Projelerimizi İncele</a>
+                    {% if aktif_kullanici %}
+                    <a href="{{ url_for('akis') }}" class="btn btn-ghost btn-lg"><i class="bi bi-grid-1x2"></i>Akışa Git</a>
+                    {% else %}
+                    <a href="{{ url_for('kayit') }}" class="btn btn-ghost btn-lg"><i class="bi bi-people"></i>Topluluğa Katıl</a>
+                    {% endif %}
+                </div>
+                <div class="d-flex align-items-center gap-3" data-reveal style="--d:.32s">
+                    <div class="d-flex">
+                        {% for gd in gonderiler[:4] %}
+                        <span{% if not loop.first %} style="margin-left: -12px;"{% endif %}>{{ m.avatar(gd.yazar_foto, 40) }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="small text-muted"><strong class="text-main">{{ istatistik.uye }}+ üye</strong> topluluğumuzda<br>fikirlerini paylaşıyor</div>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-md-block" data-reveal="olcek" style="--d:.2s">
+                <div class="position-relative py-4">
+                    <div class="radar">
+                        <div class="tarama"></div>
+                        <span class="hedef" style="top:22%;left:64%"></span>
+                        <span class="hedef" style="top:66%;left:24%;animation-delay:-1.4s"></span>
+                        <span class="hedef" style="top:72%;left:70%;animation-delay:-2.6s"></span>
+                        <div class="logo-merkez"><img src="{{ url_for('static', filename='logo.png') }}" alt="Aronsan"></div>
+                    </div>
+                    <div class="radar-kart" style="top:4%;left:-6%"><i class="bi bi-cpu"></i><div><div class="fw-bold">Otonom</div><div class="small text-muted">Görev sistemleri</div></div></div>
+                    <div class="radar-kart" style="bottom:6%;right:-4%;animation-delay:-3s"><i class="bi bi-broadcast"></i><div><div class="fw-bold">{{ istatistik.proje }} Proje</div><div class="small text-muted">Aktif geliştirme</div></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="kaydir-ipucu d-none d-md-flex"><span class="fare"></span>Keşfet</div>
+</section>
+
+<!-- EKOSİSTEM ŞERİDİ -->
+<section class="py-4 border-top border-bottom" style="border-color:var(--border)!important;background:var(--bg-2)">
+    <div class="container-xl">
+        <div class="kayan-serit">
+            <div class="ray">
+                {% for _ in range(2) %}
+                {% for ad in ['ASELSAN', 'BAYKAR', 'ROKETSAN', 'TUSAŞ', 'HAVELSAN', 'MKE', 'STM', 'FNSS', 'TEKNOFEST', 'SSB'] %}
+                <span><i class="bi bi-diamond-fill" style="font-size:.5rem;color:var(--primary)"></i>{{ ad }}</span>
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- NELER YAPIYORUZ -->
+<section class="bolum">
+    <div class="container-xl">
+        <div class="row align-items-end mb-5 g-4">
+            <div class="col-lg-7">
+                <span class="ust-etiket" data-reveal>Uzmanlık Alanlarımız</span>
+                <h2 class="bolum-baslik" data-reveal style="--d:.05s">Fikirden prototipe, <span class="gradient-text">uçtan uca</span> mühendislik</h2>
+            </div>
+            <div class="col-lg-5"><p class="bolum-aciklama mb-0" data-reveal style="--d:.1s">Donanımdan yazılıma, simülasyondan saha testine kadar her aşamada disiplinler arası çalışıyoruz.</p></div>
+        </div>
+        <div class="row g-4">
+            {% set alanlar = [
+                ('bi-airplane-engines', 'İnsansız Hava Sistemleri', 'Görev odaklı İHA platformları, uçuş kontrol yazılımları ve aerodinamik tasarım.'),
+                ('bi-cpu', 'Yapay Zekâ & Görüntü İşleme', 'Hedef tespiti, nesne takibi ve otonom karar destek algoritmaları.'),
+                ('bi-motherboard', 'Gömülü Sistemler', 'Gerçek zamanlı kontrol kartları, sensör füzyonu ve haberleşme modülleri.'),
+                ('bi-shield-lock', 'Siber Güvenlik', 'Güvenli haberleşme protokolleri ve sistemlerin siber dayanıklılığı.')
+            ] %}
+            {% for ikon, baslik, aciklama in alanlar %}
+            <div class="col-md-6 col-lg-3">
+                <div class="kart kart-hover kart-govde h-100 parlama" data-reveal style="--d: {{ loop.index0 * 0.08 }}s" data-tilt>
+                    <div class="ozellik-ikon"><i class="bi {{ ikon }}"></i></div>
+                    <h5 class="fw-bold mb-2">{{ baslik }}</h5>
+                    <p class="text-muted mb-0" style="line-height:1.65">{{ aciklama }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- İSTATİSTİK -->
+<section class="istatistik-seridi">
+    <div class="container-xl">
+        <div class="row g-0">
+            {% for deger, ad in [(istatistik.proje, 'Proje'), (istatistik.haber, 'Sektör Haberi'), (istatistik.uye, 'Topluluk Üyesi'), (istatistik.gonderi, 'Paylaşım')] %}
+            <div class="col-6 col-md-3 istatistik" data-reveal style="--d: {{ loop.index0 * 0.08 }}s">
+                <div class="deger gradient-text" data-sayac-hedef="{{ deger }}" data-sayac-ek="+">0</div>
+                <div class="etiket-ad">{{ ad }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- PROJELER -->
+<section class="bolum">
+    <div class="container-xl">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-5">
+            <div>
+                <span class="ust-etiket" data-reveal>Projelerimiz</span>
+                <h2 class="bolum-baslik mb-0" data-reveal style="--d:.05s">Üzerinde çalıştığımız sistemler</h2>
+            </div>
+            <a href="{{ url_for('projeler') }}" class="btn btn-ghost" data-reveal>Tüm projeler <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="row g-4">
+            {% for p in projeler %}
+            <div class="col-md-6 col-lg-4">{{ m.proje_kart(p, loop.index0 * 0.08) }}</div>
+            {% else %}
+            <div class="col-12">{{ m.bos('bi-rocket-takeoff', 'Projeler yakında', 'Ekibimiz yeni projeler üzerinde çalışıyor.') }}</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- HABERLER -->
+<section class="bolum pt-0">
+    <div class="container-xl">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-5">
+            <div>
+                <span class="ust-etiket" data-reveal>Güncel Haberler</span>
+                <h2 class="bolum-baslik mb-0" data-reveal style="--d:.05s">Savunma sanayiinden son gelişmeler</h2>
+            </div>
+            <a href="{{ url_for('haberler') }}" class="btn btn-ghost" data-reveal>Tüm haberler <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="row g-4">
+            {% for h in haberler %}
+            <div class="col-md-6 col-lg-4">{{ m.haber_kart(h, (loop.index0 % 3) * 0.08) }}</div>
+            {% else %}
+            <div class="col-12">{{ m.bos('bi-newspaper', 'Henüz haber yok', 'Sektör haberleri burada yayınlanacak.') }}</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- TOPLULUK -->
+<section class="bolum" style="background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+    <div class="container-xl">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-4">
+                <span class="ust-etiket" data-reveal>Topluluk</span>
+                <h2 class="bolum-baslik" data-reveal style="--d:.05s">Teknoloji tutkunlarının buluşma noktası</h2>
+                <p class="bolum-aciklama mb-4" data-reveal style="--d:.1s">Projelerini paylaş, fikirlerini tartış, ekibimizle ve diğer meraklılarla doğrudan mesajlaş.</p>
+                <div class="d-flex flex-column gap-3 mb-4" data-reveal style="--d:.15s">
+                    <div class="d-flex gap-3 align-items-center"><span class="ozellik-ikon mb-0" style="width:44px;height:44px;font-size:1.1rem"><i class="bi bi-images"></i></span><span class="text-2">Fotoğraf ve fikir paylaşımı</span></div>
+                    <div class="d-flex gap-3 align-items-center"><span class="ozellik-ikon mb-0" style="width:44px;height:44px;font-size:1.1rem"><i class="bi bi-chat-dots"></i></span><span class="text-2">Gerçek zamanlı mesajlaşma</span></div>
+                    <div class="d-flex gap-3 align-items-center"><span class="ozellik-ikon mb-0" style="width:44px;height:44px;font-size:1.1rem"><i class="bi bi-patch-check"></i></span><span class="text-2">Onaylı ekip hesapları</span></div>
+                </div>
+                <a href="{{ url_for('akis') }}" class="btn btn-primary" data-reveal style="--d:.2s">Akışı keşfet <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="col-lg-8">
+                <div class="row g-3">
+                    {% for gd in gonderiler %}
+                    <div class="col-sm-6">
+                        <div class="kart kart-hover p-3 h-100" data-reveal style="--d: {{ loop.index0 * 0.08 }}s; cursor:pointer" data-gonderi-ac="{{ gd.id }}">
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                {{ m.avatar(gd.yazar_foto, 36, halka=gd.yazar_tik) }}
+                                <div style="min-width:0">{{ m.isim(gd.kullanici_id, gd.yazar_ad, gd.yazar_tik) }}<div class="small text-muted">{{ gd.tarih|zaman_once }}</div></div>
+                            </div>
+                            {% if gd.gorsel_url %}<div class="gorsel-kutu rounded-3 mb-3" style="aspect-ratio:16/10"><img src="{{ gd.gorsel_url }}" alt="" loading="lazy"></div>{% endif %}
+                            <p class="text-2 mb-3 line-clamp-3 pre-wrap">{{ gd.icerik }}</p>
+                            <div class="d-flex gap-3 small text-muted"><span><i class="bi bi-heart me-1"></i>{{ gd.begeni_sayisi }}</span><span><i class="bi bi-chat me-1"></i>{{ gd.yorum_sayisi }}</span></div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="col-12">{{ m.bos('bi-chat-square-heart', 'İlk paylaşımı sen yap', 'Topluluk akışı seni bekliyor.', 'Akışa git', url_for('akis')) }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- EKİP -->
+{% if ekip %}
+<section class="bolum">
+    <div class="container-xl">
+        <div class="text-center mb-5">
+            <span class="ust-etiket" data-reveal>Ekibimiz</span>
+            <h2 class="bolum-baslik" data-reveal style="--d:.05s">Arkasındaki insanlar</h2>
+            <p class="bolum-aciklama mx-auto" data-reveal style="--d:.1s">Farklı disiplinlerden gelen mühendislerimiz ortak bir hedef için çalışıyor.</p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            {% for p in ekip %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="{{ url_for('uye_detay', id=p.id) }}" class="kart kart-hover ekip-kart d-block text-reset" data-reveal style="--d: {{ loop.index0 * 0.08 }}s">
+                    <div class="gorsel-kutu">{% if p.gorsel_url %}<img src="{{ p.gorsel_url }}" alt="{{ p.ad_soyad }}" loading="lazy">{% else %}<div class="gorsel-yok w-100 h-100"><i class="bi bi-person"></i></div>{% endif %}</div>
+                    <div class="p-3">
+                        <h6 class="fw-bold mb-1">{{ p.ad_soyad }}</h6>
+                        <div class="small text-primary fw-semibold">{{ p.rutbe }}</div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5"><a href="{{ url_for('ekibimiz') }}" class="btn btn-ghost">Tüm ekibi tanı <i class="bi bi-arrow-right"></i></a></div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA -->
+<section class="pb-5">
+    <div class="container-xl">
+        <div class="cta-kutu" data-reveal="olcek">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-8">
+                    <h2 class="display-6 fw-bold mb-3">Geleceği birlikte inşa edelim.</h2>
+                    <p class="mb-0 fs-5" style="opacity:.9">Projelerimize destek olmak, iş birliği yapmak ya da ekibimize katılmak için bizimle iletişime geç.</p>
+                </div>
+                <div class="col-lg-4 d-flex flex-wrap gap-2 justify-content-lg-end">
+                    <a href="{{ url_for('iletisim') }}" class="btn btn-light btn-lg"><i class="bi bi-envelope"></i>İletişime Geç</a>
+                    {% if not aktif_kullanici %}<a href="{{ url_for('kayit') }}" class="btn btn-cam btn-lg">Üye Ol</a>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    // Daktilo efekti
+    const kelimeler = ['otonom sistemlerle', 'yapay zekâ ile', 'milli mühendislikle', 'tutkuyla'];
+    const el = document.getElementById('yazici');
+    if (el && document.documentElement.dataset.motion !== 'reduce') {
+        let k = 0, i = kelimeler[0].length, siliyor = true;
+        setTimeout(function dongu() {
+            const kelime = kelimeler[k];
+            el.textContent = kelime.slice(0, i);
+            if (siliyor) { i--; if (i < 0) { siliyor = false; k = (k + 1) % kelimeler.length; i = 0; } }
+            else { i++; if (i > kelimeler[k].length) { siliyor = true; return setTimeout(dongu, 2200); } }
+            setTimeout(dongu, siliyor ? 40 : 75);
+        }, 2600);
+    }
+
+    // Parçacık ağı
+    const c = document.getElementById('heroCanvas');
+    if (!c || document.documentElement.dataset.motion === 'reduce' || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const ctx = c.getContext('2d');
+    let W, H, noktalar = [], renk = '59,130,246', fare = { x: -999, y: -999 };
+    const renkAl = () => { renk = getComputedStyle(document.documentElement).getPropertyValue('--primary-rgb').trim() || renk; };
+    function boyutla() {
+        const dpr = Math.min(devicePixelRatio || 1, 2);
+        W = c.offsetWidth; H = c.offsetHeight; c.width = W * dpr; c.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const adet = Math.min(70, Math.floor(W * H / 22000));
+        noktalar = Array.from({ length: adet }, () => ({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - .5) * .35, vy: (Math.random() - .5) * .35, r: Math.random() * 1.6 + .6 }));
+    }
+    function ciz() {
+        ctx.clearRect(0, 0, W, H);
+        for (let i = 0; i < noktalar.length; i++) {
+            const p = noktalar[i];
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0 || p.x > W) p.vx *= -1;
+            if (p.y < 0 || p.y > H) p.vy *= -1;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fillStyle = `rgba(${renk},.7)`; ctx.fill();
+            for (let j = i + 1; j < noktalar.length; j++) {
+                const q = noktalar[j], dx = p.x - q.x, dy = p.y - q.y, d = dx * dx + dy * dy;
+                if (d < 16000) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.strokeStyle = `rgba(${renk},${(1 - d / 16000) * .22})`; ctx.lineWidth = 1; ctx.stroke(); }
+            }
+            const fx = p.x - fare.x, fy = p.y - fare.y, fd = fx * fx + fy * fy;
+            if (fd < 26000) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(fare.x, fare.y); ctx.strokeStyle = `rgba(${renk},${(1 - fd / 26000) * .45})`; ctx.stroke(); }
+        }
+        requestAnimationFrame(ciz);
+    }
+    c.parentElement.addEventListener('mousemove', (e) => { const r = c.getBoundingClientRect(); fare.x = e.clientX - r.left; fare.y = e.clientY - r.top; });
+    c.parentElement.addEventListener('mouseleave', () => { fare.x = fare.y = -999; });
+    addEventListener('resize', boyutla);
+    document.addEventListener('aronsan:tema', renkAl);
+    renkAl(); boyutla(); ciz();
+})();
+</script>
+{% endblock %}

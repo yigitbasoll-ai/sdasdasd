@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}Ekibimiz{% endblock %}
+
+{% block content %}
+{{ m.sayfa_hero('Aronsan Kadrosu', 'Geleceği tasarlayan <span class="gradient-text">ekip</span>', 'Mühendislik, yazılım ve tasarım alanlarında uzmanlaşmış, savunma teknolojilerine tutkuyla bağlı bir kadro.', 'Ekibimiz') }}
+
+<section class="bolum-sm">
+    <div class="container-xl">
+        {% if departmanlar|length > 1 %}
+        <div class="cip-grup justify-content-center mb-5" id="ekipFiltre" data-reveal>
+            <button class="cip aktif" data-dep="*">Tüm ekip</button>
+            {% for d in departmanlar %}<button class="cip" data-dep="{{ d }}">{{ d }}</button>{% endfor %}
+        </div>
+        {% endif %}
+        <div class="row g-4 justify-content-center">
+            {% for p in personeller %}
+            <div class="col-sm-6 col-lg-4 col-xl-3" data-dep="{{ p.departman }}">
+                <div class="kart kart-hover ekip-kart" data-reveal style="--d: {{ (loop.index0 % 4) * 0.07 }}s">
+                    <div class="gorsel-kutu">
+                        {% if p.gorsel_url %}<img src="{{ p.gorsel_url }}" alt="{{ p.ad_soyad }}" loading="lazy">{% else %}<div class="gorsel-yok w-100 h-100"><i class="bi bi-person"></i></div>{% endif %}
+                        <div class="katman">
+                            <a href="{{ url_for('uye_detay', id=p.id) }}" title="Detaylar"><i class="bi bi-person-vcard"></i></a>
+                            {% if p.linkedin %}<a href="{{ p.linkedin }}" target="_blank" rel="noopener" title="LinkedIn"><i class="bi bi-linkedin"></i></a>{% endif %}
+                            {% if p.github %}<a href="{{ p.github }}" target="_blank" rel="noopener" title="GitHub"><i class="bi bi-github"></i></a>{% endif %}
+                            {% if p.hesap_id %}<a href="{{ url_for('mesaj_paneli', alici_id=p.hesap_id) }}" title="Mesaj gönder"><i class="bi bi-chat-dots"></i></a>{% endif %}
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <span class="etiket mb-2">{{ p.departman }}</span>
+                        <h5 class="fw-bold mb-1 mt-2 d-flex align-items-center justify-content-center">{{ p.ad_soyad }}{{ m.tik(p.mavi_tik) }}</h5>
+                        <div class="text-muted small mb-3">{{ p.rutbe }}</div>
+                        <p class="small text-2 line-clamp-2 mb-3">{{ p.biyografi }}</p>
+                        <a href="{{ url_for('uye_detay', id=p.id) }}" class="btn btn-ghost btn-sm w-100">Profili incele <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">{{ m.bos('bi-people', 'Ekip yakında burada', 'Ekip üyelerimiz kısa süre içinde eklenecek.') }}</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="pb-5">
+    <div class="container-xl">
+        <div class="cta-kutu" data-reveal="olcek">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-8">
+                    <h2 class="fw-bold mb-2">Ekibimize katılmak ister misin?</h2>
+                    <p class="mb-0" style="opacity:.9">Yazılım, elektronik, makine veya tasarım alanında tutkuluysan seninle tanışmak isteriz.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end"><a href="{{ url_for('iletisim', konu='Ekibe katılım') }}" class="btn btn-light btn-lg"><i class="bi bi-person-plus"></i>Başvur</a></div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('#ekipFiltre .cip').forEach((c) => c.addEventListener('click', () => {
+    document.querySelectorAll('#ekipFiltre .cip').forEach((x) => x.classList.remove('aktif'));
+    c.classList.add('aktif');
+    document.querySelectorAll('[data-dep]:not(.cip)').forEach((k) => { k.style.display = (c.dataset.dep === '*' || k.dataset.dep === c.dataset.dep) ? '' : 'none'; });
+}));
+</script>
+{% endblock %}

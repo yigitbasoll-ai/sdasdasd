@@ -1,0 +1,38 @@
+{% extends 'admin_base.html' %}
+{% block title %}Destek · Yönetim{% endblock %}
+
+{% block admin %}
+<div class="mb-4" data-reveal>
+    <h1 class="fw-bold mb-1" style="font-size:1.9rem">Destek & İletişim</h1>
+    <p class="text-muted m-0">Kullanıcı destek talepleri ve iletişim formu mesajları</p>
+</div>
+<div class="d-flex flex-column gap-3">
+    {% for t in talepler %}
+    <div class="kart kart-govde {{ '' if t.durum == 'acik' else 'opacity-75' }}" data-reveal style="--d: {{ (loop.index0 % 5) * 0.04 }}s">
+        <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="etiket {{ 'notr' if t.tur == 'iletisim' else '' }}"><i class="bi {{ 'bi-envelope' if t.tur == 'iletisim' else 'bi-life-preserver' }}"></i>{{ 'İletişim' if t.tur == 'iletisim' else 'Destek' }}</span>
+                <strong class="text-main">{{ t.konu or 'Genel' }}</strong>
+                {% if t.durum == 'acik' %}<span class="etiket sari">Açık</span>{% else %}<span class="etiket yesil">Çözüldü</span>{% endif %}
+            </div>
+            <span class="small text-muted">{{ t.tarih|tarih_tr(True) }}</span>
+        </div>
+        <p class="text-2 pre-wrap mb-3">{{ t.mesaj }}</p>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 border-top" style="border-color:var(--border)!important">
+            <div class="small text-muted">
+                <i class="bi bi-person me-1"></i>{% if t.kullanici_id %}<a href="{{ url_for('profil', id=t.kullanici_id) }}">{{ t.ad_soyad }}</a>{% else %}{{ t.ad_soyad or 'Anonim' }}{% endif %}
+                {% if t.eposta %} · <a href="mailto:{{ t.eposta }}">{{ t.eposta }}</a>{% endif %}
+            </div>
+            <div class="d-flex gap-2">
+                {% if t.kullanici_id %}<a href="{{ url_for('mesaj_paneli', alici_id=t.kullanici_id) }}" class="btn btn-sm btn-ghost"><i class="bi bi-chat-dots"></i>Yanıtla</a>{% endif %}
+                <form method="POST" action="{{ url_for('admin_destek_durum', id=t.id) }}"><input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                    <button class="btn btn-sm {{ 'btn-primary' if t.durum == 'acik' else 'btn-ghost' }}">{% if t.durum == 'acik' %}<i class="bi bi-check2"></i>Çözüldü işaretle{% else %}<i class="bi bi-arrow-counterclockwise"></i>Yeniden aç{% endif %}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="kart"><div class="bos-durum"><div class="ikon"><i class="bi bi-inbox"></i></div><h5>Gelen kutusu boş</h5><p class="mb-0">Yeni bir destek talebi veya mesaj yok.</p></div></div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'admin_base.html' %}
+{% block title %}{{ 'Projeyi Düzenle' if kayit else 'Yeni Proje' }} · Yönetim{% endblock %}
+
+{% block admin %}
+<div class="mb-4" data-reveal>
+    <div class="ekmek mb-1"><a href="{{ url_for('admin_projeler') }}"><i class="bi bi-arrow-left"></i> Projeler</a></div>
+    <h1 class="fw-bold m-0" style="font-size:1.9rem">{{ 'Projeyi düzenle' if kayit else 'Yeni proje ekle' }}</h1>
+</div>
+<form method="POST" enctype="multipart/form-data" data-yukleniyor>
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <div class="kart kart-govde" data-reveal>
+                <label class="form-label">Proje adı *</label>
+                <input class="form-control form-control-lg mb-3" name="baslik" required maxlength="150" value="{{ kayit.baslik if kayit else '' }}" placeholder="Örn. Otonom Keşif İHA'sı">
+                <label class="form-label">Açıklama *</label>
+                <textarea class="form-control" name="icerik" rows="14" required data-sayac="projeSayac" maxlength="20000" placeholder="Projenin amacı, teknik özellikleri, ekip ve hedefler...">{{ kayit.icerik if kayit else '' }}</textarea>
+                <div class="karakter-sayac mt-1" id="projeSayac"></div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="kart kart-govde mb-4" data-reveal style="--d:.05s">
+                <label class="form-label">Kategori</label>
+                <input class="form-control mb-3" name="kategori" maxlength="40" list="kategoriListe" value="{{ kayit.kategori if kayit and kayit.kategori else '' }}" placeholder="Örn. İHA, Yazılım, Elektronik">
+                <datalist id="kategoriListe"><option>İHA</option><option>Yapay Zekâ</option><option>Gömülü Sistemler</option><option>Yazılım</option><option>Roket</option><option>Kara Aracı</option></datalist>
+                <label class="form-label">Durum</label>
+                <select class="form-select" name="durum">
+                    {% for d in PROJE_DURUMLARI %}<option {{ 'selected' if (kayit.durum if kayit else 'Geliştirme') == d }}>{{ d }}</option>{% endfor %}
+                </select>
+            </div>
+            {% include 'admin_gorsel_alani.html' %}
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-4"><i class="bi bi-check2"></i>{{ 'Değişiklikleri kaydet' if kayit else 'Projeyi ekle' }}</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

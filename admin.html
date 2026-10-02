@@ -1,0 +1,109 @@
+{% extends 'admin_base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}Yönetim Paneli{% endblock %}
+
+{% block admin %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4" data-reveal>
+    <div>
+        <h1 class="fw-bold mb-1" style="font-size:1.9rem">Genel bakış</h1>
+        <p class="text-muted m-0">Hoş geldin {{ aktif_kullanici.ad_soyad.split(' ')[0] }}, platformun güncel durumu burada.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('haber_ekle') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i>Haber</a>
+        <a href="{{ url_for('proje_ekle') }}" class="btn btn-ghost"><i class="bi bi-plus-lg"></i>Proje</a>
+        <a href="{{ url_for('personel_ekle') }}" class="btn btn-ghost"><i class="bi bi-plus-lg"></i>Ekip üyesi</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    {% for deger, ad, ikon, renk in [
+        (ist.uye, 'Kayıtlı üye', 'bi-people', '59,130,246'),
+        (ist.onayli, 'Onaylı hesap', 'bi-patch-check', '59,155,255'),
+        (ist.gonderi, 'Gönderi', 'bi-images', '139,92,246'),
+        (ist.mesaj, 'Mesaj', 'bi-chat-dots', '16,185,129'),
+        (ist.haber, 'Haber', 'bi-newspaper', '249,115,22'),
+        (ist.goruntulenme, 'Haber görüntülenme', 'bi-eye', '6,182,212'),
+        (ist.yorum, 'Yorum', 'bi-chat-quote', '236,72,153'),
+        (ist.acik_talep, 'Açık talep', 'bi-inbox', '239,68,68')
+    ] %}
+    <div class="col-6 col-xl-3">
+        <div class="kart kart-hover stat-kart h-100" data-reveal style="--d: {{ (loop.index0 % 4) * 0.06 }}s">
+            <div class="ikon" style="background:rgba({{ renk }},.14);color:rgb({{ renk }})"><i class="bi {{ ikon }}"></i></div>
+            <div><div class="deger" data-sayac-hedef="{{ deger }}">0</div><div class="ad">{{ ad }}</div></div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-7">
+        <div class="kart mb-4" data-reveal>
+            <div class="kart-baslik"><h6>Son katılan üyeler</h6><a href="{{ url_for('admin_kullanicilar') }}" class="small fw-semibold">Tümü <i class="bi bi-arrow-right"></i></a></div>
+            <div class="p-2">
+                {% for k in son_uyeler %}
+                <div class="kisi-satir">
+                    <a href="{{ url_for('profil', id=k.id) }}">{{ m.avatar(k.profil_fotografi, 40, cevrimici_mi(k)) }}</a>
+                    <div class="bilgi">{{ m.kisi(k) }}<div class="alt">{{ k.eposta }} · {{ k.kayit_tarihi|zaman_once }}</div></div>
+                    <button class="btn btn-sm {{ 'btn-outline-primary' if not k.mavi_tik else 'btn-ghost' }}" data-admin-islem="mavi_tik" data-id="{{ k.id }}" title="Mavi tik">
+                        <i class="bi {{ 'bi-patch-check-fill' if k.mavi_tik else 'bi-patch-check' }}"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="kart" data-reveal>
+            <div class="kart-baslik"><h6>En çok okunan haberler</h6><a href="{{ url_for('admin_haberler') }}" class="small fw-semibold">Yönet <i class="bi bi-arrow-right"></i></a></div>
+            <div class="tablo-kutu">
+                <table class="tablo">
+                    <thead><tr><th>Başlık</th><th>Görüntülenme</th><th>Beğeni</th><th>Yorum</th></tr></thead>
+                    <tbody>
+                        {% for h in populer %}
+                        <tr><td><a href="{{ url_for('haber_detay', id=h.id) }}" class="fw-semibold text-main line-clamp-2">{{ h.baslik }}</a></td><td>{{ h.goruntulenme }}</td><td>{{ h.begeni_sayisi }}</td><td>{{ h.yorum_sayisi }}</td></tr>
+                        {% else %}<tr><td colspan="4" class="text-center text-muted py-4">Henüz haber yok.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-5">
+        <form method="POST" action="{{ url_for('admin_duyuru') }}" class="kart mb-4" data-reveal data-onay="Bu duyuru tüm kullanıcılara bildirim olarak gönderilecek. Devam edilsin mi?">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <div class="kart-baslik"><h6><i class="bi bi-megaphone me-2 text-primary"></i>Duyuru gönder</h6></div>
+            <div class="kart-govde">
+                <textarea class="form-control mb-2" name="metin" rows="3" maxlength="300" required placeholder="Tüm kullanıcılara gönderilecek duyuru..."></textarea>
+                <input class="form-control mb-3" name="link" placeholder="Bağlantı (opsiyonel), ör. /projeler">
+                <button class="btn btn-primary w-100"><i class="bi bi-send"></i>Herkese gönder</button>
+            </div>
+        </form>
+
+        <div class="kart mb-4" data-reveal>
+            <div class="kart-baslik"><h6>Son destek talepleri</h6><a href="{{ url_for('admin_destek') }}" class="small fw-semibold">Tümü <i class="bi bi-arrow-right"></i></a></div>
+            <div class="p-2">
+                {% for t in son_talepler %}
+                <div class="kisi-satir align-items-start">
+                    <span class="bildirim-ikon" style="width:36px;height:36px"><i class="bi {{ 'bi-envelope' if t.tur == 'iletisim' else 'bi-life-preserver' }}"></i></span>
+                    <div class="bilgi">
+                        <div class="d-flex justify-content-between gap-2"><span class="fw-semibold text-main text-truncate">{{ t.ad_soyad or 'Anonim' }}</span>{% if t.durum == 'acik' %}<span class="etiket sari">Açık</span>{% else %}<span class="etiket yesil">Çözüldü</span>{% endif %}</div>
+                        <div class="small text-muted">{{ t.konu or 'Genel' }} · {{ t.tarih|zaman_once }}</div>
+                        <div class="small text-2 line-clamp-2 mt-1">{{ t.mesaj }}</div>
+                    </div>
+                </div>
+                {% else %}<div class="text-center text-muted small py-4">Talep yok.</div>{% endfor %}
+            </div>
+        </div>
+
+        <div class="kart kart-govde" data-reveal>
+            <h6 class="fw-bold mb-3">Hızlı işlemler</h6>
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('admin_kullanicilar') }}" class="btn btn-ghost justify-content-start"><i class="bi bi-patch-check text-primary"></i>Mavi tik ver / kaldır</a>
+                <a href="{{ url_for('admin_gonderiler') }}" class="btn btn-ghost justify-content-start"><i class="bi bi-images text-primary"></i>Gönderileri denetle</a>
+                <a href="{{ url_for('personel_ekle') }}" class="btn btn-ghost justify-content-start"><i class="bi bi-person-plus text-primary"></i>Vitrine ekip üyesi ekle</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}{% include 'admin_js.html' %}{% endblock %}

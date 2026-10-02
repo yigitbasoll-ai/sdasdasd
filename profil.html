@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}{{ kisi.ad_soyad }}{% endblock %}
+{% block description %}{{ kisi.ad_soyad }} — {{ kisi.biyografi or 'Aronsan topluluk üyesi' }}{% endblock %}
+
+{% block content %}
+{% set benim_profilim = aktif_kullanici and aktif_kullanici.id == kisi.id %}
+<div class="container-xl">
+    <div class="profil-kapak {{ 'varsayilan' if not kisi.kapak_fotografi }}" data-reveal="olcek">
+        {% if kisi.kapak_fotografi %}<img src="{{ kisi.kapak_fotografi }}" alt="" data-isik style="cursor:zoom-in">{% endif %}
+    </div>
+
+    <div class="profil-ust px-2 px-md-4">
+        <div class="d-flex flex-column flex-md-row align-items-center align-items-md-end gap-3 gap-md-4 text-center text-md-start">
+            <div data-reveal style="--d:.05s">
+                <span class="avatar profil-avatar {{ 'halka' if kisi.mavi_tik }}">
+                    <img src="{{ kisi.profil_fotografi or VARSAYILAN_AVATAR }}" alt="{{ kisi.ad_soyad }}" data-isik style="cursor:zoom-in" onerror="this.src='{{ url_for('static', filename='img/avatar.svg') }}'">
+                    {% if cevrimici_mi(kisi) %}<span class="cevrimici-nokta" style="right:8%;bottom:8%;width:22px;height:22px;border-width:4px" title="Çevrimiçi"></span>{% endif %}
+                </span>
+            </div>
+            <div class="flex-grow-1 pb-md-2" data-reveal style="--d:.1s">
+                <h1 class="profil-ad justify-content-center justify-content-md-start">
+                    {{ kisi.ad_soyad }}{{ m.tik(kisi.mavi_tik) }}
+                    {% if kisi.yetki == 'personel' %}<span class="personel-rozet" style="font-size:.7rem">ARONSAN EKİBİ</span>{% endif %}
+                </h1>
+                {% if kisi.unvan %}<div class="text-2 fw-medium mt-1">{{ kisi.unvan }}</div>{% endif %}
+                {% if beni_takip_ediyor %}<span class="etiket notr mt-2"><i class="bi bi-person-check"></i>Seni takip ediyor</span>{% endif %}
+            </div>
+            <div class="d-flex flex-wrap justify-content-center gap-2 pb-md-2" data-reveal style="--d:.15s">
+                {% if benim_profilim %}
+                    <a href="{{ url_for('hesap_ayarlari') }}" class="btn btn-primary"><i class="bi bi-pencil-square"></i>Profili Düzenle</a>
+                    <a href="{{ url_for('ayarlar') }}" class="btn btn-ghost" title="Ayarlar"><i class="bi bi-gear"></i></a>
+                {% elif aktif_kullanici %}
+                    <button class="btn" data-takip="{{ kisi.id }}" data-stil="buyuk" data-durum="{{ 1 if takip_durumu else 0 }}">Takip Et</button>
+                    <a href="{{ url_for('mesaj_paneli', alici_id=kisi.id) }}" class="btn btn-ghost"><i class="bi bi-chat-dots"></i>Mesaj</a>
+                {% else %}
+                    <a href="{{ url_for('giris', next=request.path) }}" class="btn btn-primary"><i class="bi bi-person-plus"></i>Takip Et</a>
+                {% endif %}
+                <div class="dropdown">
+                    <button class="btn btn-ghost" data-bs-toggle="dropdown" aria-label="Diğer"><i class="bi bi-three-dots"></i></button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><button class="dropdown-item" data-kopyala="{{ url_for('profil', id=kisi.id, _external=True) }}"><i class="bi bi-link-45deg"></i>Profil bağlantısını kopyala</button></li>
+                        <li><span class="dropdown-item-text small text-muted px-3">Kullanıcı ID: #{{ kisi.id }}</span></li>
+                        {% if aktif_kullanici and aktif_kullanici.yetki == 'personel' and not benim_profilim %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin_kullanicilar', q=kisi.eposta) }}"><i class="bi bi-shield-lock"></i>Yönetim panelinde aç</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-2">
+            <div class="col-lg-4">
+                <div class="kart kart-govde yapiskan-yan" data-reveal style="--d:.2s">
+                    <div class="profil-istatistik justify-content-between mb-4">
+                        <div><strong>{{ gonderiler|length }}</strong><br>gönderi</div>
+                        <button data-takip-liste="{{ kisi.id }}" data-tur="takipciler"><strong data-takipci-sayi="{{ kisi.id }}">{{ takipci_sayisi }}</strong><br>takipçi</button>
+                        <button data-takip-liste="{{ kisi.id }}" data-tur="takip_edilenler"><strong>{{ takip_edilen_sayisi }}</strong><br>takip</button>
+                        <div><strong>{{ toplam_begeni }}</strong><br>beğeni</div>
+                    </div>
+                    {% if kisi.biyografi %}<p class="text-2 pre-wrap mb-3" style="line-height:1.65">{{ kisi.biyografi }}</p>{% endif %}
+                    <div class="profil-meta flex-column gap-2">
+                        {% if kisi.konum %}<span><i class="bi bi-geo-alt"></i>{{ kisi.konum }}</span>{% endif %}
+                        {% if kisi.web_sitesi %}<a href="{{ kisi.web_sitesi }}" target="_blank" rel="noopener nofollow"><i class="bi bi-link-45deg"></i>{{ kisi.web_sitesi.replace('https://', '').replace('http://', '')[:40] }}</a>{% endif %}
+                        {% if kisi.kayit_tarihi %}<span><i class="bi bi-calendar3"></i>{{ kisi.kayit_tarihi|tarih_tr }} tarihinde katıldı</span>{% endif %}
+                        {% set durum = son_gorulme_metni(kisi) %}
+                        {% if durum and not benim_profilim %}<span style="{{ 'color:var(--success)' if durum == 'Çevrimiçi' }}"><i class="bi bi-circle-fill" style="font-size:.5rem"></i>{{ durum }}</span>{% endif %}
+                    </div>
+                    {% if ortak_takip %}
+                    <div class="d-flex align-items-center gap-2 mt-3 pt-3 border-top small text-muted" style="border-color:var(--border)!important">
+                        <div class="d-flex">{% for o in ortak_takip %}<span style="margin-left:{{ '0' if loop.first else '-8px' }}">{{ m.avatar(o.profil_fotografi, 26) }}</span>{% endfor %}</div>
+                        <span><strong class="text-main">{{ ortak_takip[0].ad_soyad }}</strong>{% if ortak_takip|length > 1 %} ve {{ ortak_takip|length - 1 }} kişi{% endif %} takip ediyor</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="sekmeler mb-4" id="profilSekmeler" data-reveal style="--d:.25s">
+                    <button class="aktif" data-sekme="izgara"><i class="bi bi-grid-3x3"></i>Gönderiler</button>
+                    <button data-sekme="liste"><i class="bi bi-view-list"></i>Akış</button>
+                    {% if benim_profilim %}<button data-sekme="kaydedilenler"><i class="bi bi-bookmark"></i>Kaydedilenler</button>{% endif %}
+                </div>
+
+                <div data-sekme-icerik="izgara">
+                    {% if gonderiler %}
+                    <div class="izgara-3">
+                        {% for gd in gonderiler %}
+                        <div class="izgara-oge" data-gonderi-ac="{{ gd.id }}" data-izgara-gonderi="{{ gd.id }}" data-reveal="olcek" style="--d: {{ (loop.index0 % 3) * 0.05 }}s">
+                            {% if gd.gorsel_url %}<img src="{{ gd.gorsel_url }}" alt="" loading="lazy">{% if gd.icerik %}<i class="bi bi-chat-square-text coklu"></i>{% endif %}
+                            {% else %}<div class="metin"><span>{{ gd.icerik }}</span></div>{% endif %}
+                            <div class="ortu"><span><i class="bi bi-heart-fill me-1"></i>{{ gd.begeni_sayisi }}</span><span><i class="bi bi-chat-fill me-1"></i>{{ gd.yorum_sayisi }}</span></div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% elif benim_profilim %}
+                        {{ m.bos('bi-camera', 'İlk gönderini paylaş', 'Fotoğraf ve fikirlerin profilinde burada görünecek.') }}
+                        <div class="text-center"><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#gonderiModal"><i class="bi bi-plus-lg"></i>Gönderi oluştur</button></div>
+                    {% else %}
+                        {{ m.bos('bi-camera', 'Henüz gönderi yok', kisi.ad_soyad ~ ' henüz bir şey paylaşmadı.') }}
+                    {% endif %}
+                </div>
+
+                <div data-sekme-icerik="liste" style="display:none">
+                    <div class="d-flex flex-column gap-4 mx-auto" style="max-width:620px">
+                        {% for gd in gonderiler %}{{ m.gonderi_kart(gd) }}{% else %}{{ m.bos('bi-view-list', 'Henüz gönderi yok') }}{% endfor %}
+                    </div>
+                </div>
+
+                {% if benim_profilim %}
+                <div data-sekme-icerik="kaydedilenler" style="display:none">
+                    <div class="bilgi-kutu mb-4"><i class="bi bi-lock"></i><div>Kaydettiğin haberleri yalnızca sen görebilirsin.</div></div>
+                    <div class="row g-4">
+                        {% for h in kaydedilenler %}<div class="col-md-6">{{ m.haber_kart(h) }}</div>
+                        {% else %}<div class="col-12">{{ m.bos('bi-bookmark', 'Kaydedilen içerik yok', 'Haberlerdeki yer imi simgesine tıklayarak daha sonra okumak üzere kaydedebilirsin.', 'Haberlere göz at', url_for('haberler')) }}</div>{% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const butonlar = document.querySelectorAll('#profilSekmeler [data-sekme]');
+    function sec(ad) {
+        let bulundu = false;
+        butonlar.forEach((b) => { const ok = b.dataset.sekme === ad; b.classList.toggle('aktif', ok); bulundu = bulundu || ok; });
+        if (!bulundu) return;
+        document.querySelectorAll('[data-sekme-icerik]').forEach((i) => {
+            const ok = i.dataset.sekmeIcerik === ad;
+            i.style.display = ok ? '' : 'none';
+            if (ok) window.Aronsan.gozle(i);
+        });
+    }
+    butonlar.forEach((b) => b.addEventListener('click', () => { sec(b.dataset.sekme); history.replaceState(null, '', '#' + b.dataset.sekme); }));
+    if (location.hash) sec(location.hash.slice(1));
+})();
+</script>
+{% endblock %}

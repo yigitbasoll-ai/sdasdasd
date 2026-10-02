@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}Mesajlar{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="container-xl py-3 py-lg-4">
+    <div class="dm {{ 'sohbet-acik' if secili_kisi }}" id="dm">
+        <!-- SOL: SOHBET LİSTESİ -->
+        <aside class="dm-yan">
+            <div class="dm-yan-ust">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="fw-bold m-0 d-flex align-items-center gap-2">Mesajlar</h4>
+                    <button class="ikon-btn" data-bs-toggle="modal" data-bs-target="#yeniSohbetModal" title="Yeni sohbet" aria-label="Yeni sohbet"><i class="bi bi-pencil-square"></i></button>
+                </div>
+                <div class="input-ikon"><i class="bi bi-search"></i><input class="form-control" id="sohbetAra" placeholder="Sohbetlerde ara..." autocomplete="off"></div>
+            </div>
+            <div class="dm-liste" id="dmListe">
+                <div id="sohbetListesi"></div>
+                {% if oneriler %}
+                <div id="oneriBolum">
+                    <div class="dm-bolum-baslik">Önerilen kişiler</div>
+                    {% for k in oneriler %}
+                    <a href="{{ url_for('mesaj_paneli', alici_id=k.id) }}" class="dm-kisi {{ 'aktif' if secili_kisi and secili_kisi.id == k.id }}" data-ad="{{ k.ad_soyad|lower }}">
+                        {{ m.avatar(k.profil_fotografi, 48, cevrimici_mi(k)) }}
+                        <div class="bilgi">
+                            {{ m.isim(k.id, k.ad_soyad, k.mavi_tik, link=False) }}
+                            <div class="onizleme">{{ k.unvan or ('Aronsan ekibi' if k.yetki == 'personel' else 'Sohbet başlat') }}</div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </aside>
+
+        <!-- SAĞ: SOHBET -->
+        <section class="dm-sohbet" id="dmSohbet" data-tema="{{ aktif_tema }}">
+            {% if secili_kisi %}
+            <header class="dm-sohbet-ust">
+                <a href="{{ url_for('mesaj_paneli') }}" class="ikon-btn d-lg-none" aria-label="Geri"><i class="bi bi-arrow-left"></i></a>
+                <a href="{{ url_for('profil', id=secili_kisi.id) }}" id="ustAvatar">{{ m.avatar(secili_kisi.profil_fotografi, 46, cevrimici_mi(secili_kisi)) }}</a>
+                <div class="flex-grow-1" style="min-width:0">
+                    <a href="{{ url_for('profil', id=secili_kisi.id) }}" class="kisi-isim fs-6"><span id="baslikAd">{{ aktif_takma_ad or secili_kisi.ad_soyad }}</span>{{ m.tik(secili_kisi.mavi_tik) }}{% if secili_kisi.yetki == 'personel' %}<span class="personel-rozet">EKİP</span>{% endif %}</a>
+                    {% set durum = son_gorulme_metni(secili_kisi) %}
+                    <div class="durum {{ 'cevrimici' if durum == 'Çevrimiçi' }}" id="durumMetni">{{ durum or (secili_kisi.unvan or '') }}</div>
+                </div>
+                <a href="{{ url_for('profil', id=secili_kisi.id) }}" class="ikon-btn d-none d-sm-inline-flex" title="Profili görüntüle"><i class="bi bi-person"></i></a>
+                <button class="ikon-btn" data-bs-toggle="modal" data-bs-target="#sohbetAyarModal" title="Sohbet ayarları"><i class="bi bi-sliders"></i></button>
+            </header>
+
+            <div class="dm-mesajlar" id="mesajAlani">
+                <div class="text-center py-4" id="sohbetBasi">
+                    {{ m.avatar(secili_kisi.profil_fotografi, 84) }}
+                    <h5 class="fw-bold mt-3 mb-1 d-flex align-items-center justify-content-center">{{ secili_kisi.ad_soyad }}{{ m.tik(secili_kisi.mavi_tik) }}</h5>
+                    <div class="small text-muted mb-3">{{ secili_kisi.unvan or secili_kisi.biyografi or 'Aronsan topluluk üyesi' }}</div>
+                    <a href="{{ url_for('profil', id=secili_kisi.id) }}" class="btn btn-ghost btn-sm">Profili görüntüle</a>
+                </div>
+                <div id="mesajListe"></div>
+                <div class="yaziyor-balon" id="yaziyorBalon"><span></span><span></span><span></span></div>
+            </div>
+            <button class="btn btn-primary btn-sm btn-pill yeni-msj-btn shadow" id="yeniMsjBtn"><i class="bi bi-arrow-down"></i>Yeni mesaj</button>
+
+            {% if mesaj_izni %}
+            <div class="dm-yazma position-relative">
+                <div class="emoji-panel" id="emojiPanel"></div>
+                <div class="dm-onizleme" id="dmOnizleme">
+                    <img src="" alt="">
+                    <div class="small flex-grow-1"><div class="fw-semibold">Fotoğraf eklendi</div><div class="text-muted" id="dmDosyaAd"></div></div>
+                    <button class="btn-link-plain fs-5" id="dmOnizlemeKaldir" aria-label="Kaldır"><i class="bi bi-x-circle"></i></button>
+                </div>
+                <div class="kutu">
+                    <button class="arac" id="emojiBtn" type="button" title="Emoji" aria-label="Emoji"><i class="bi bi-emoji-smile"></i></button>
+                    <label class="arac mb-0" title="Fotoğraf gönder" style="cursor:pointer"><i class="bi bi-image"></i><input type="file" id="dmDosya" accept="image/*" hidden></label>
+                    <textarea id="mesajInput" rows="1" maxlength="4000" placeholder="Mesaj yaz..." aria-label="Mesaj"></textarea>
+                    <button class="arac gonder" id="gonderBtn" type="button" title="Gönder (Enter)" aria-label="Gönder" disabled><i class="bi bi-send-fill"></i></button>
+                </div>
+                <div class="small text-muted mt-2 d-none d-md-block px-2" style="font-size:.72rem"><kbd>Enter</kbd> gönder · <kbd>Shift</kbd>+<kbd>Enter</kbd> yeni satır · mesaja çift tıkla ❤️</div>
+            </div>
+            {% else %}
+            <div class="dm-yazma"><div class="bilgi-kutu"><i class="bi bi-lock"></i><div>{{ secili_kisi.ad_soyad }} şu anda yeni mesaj kabul etmiyor.</div></div></div>
+            {% endif %}
+            {% else %}
+            <div class="dm-bos">
+                <div class="ikon-daire"><i class="bi bi-send"></i></div>
+                <h4 class="fw-bold" style="color:var(--text)">Mesajların</h4>
+                <p class="mb-4">Ekip üyelerine ve topluluğa özel mesaj gönder.</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#yeniSohbetModal"><i class="bi bi-pencil-square"></i>Mesaj gönder</button>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+<!-- Yeni Sohbet -->
+<div class="modal fade" id="yeniSohbetModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title fw-bold">Yeni sohbet</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body" style="min-height:300px">
+                <div class="input-ikon mb-3"><i class="bi bi-search"></i><input class="form-control" id="kisiAra" placeholder="Kişi ara..." autocomplete="off"></div>
+                <div id="kisiSonuc"><div class="text-center text-muted small py-4">Mesaj göndermek istediğin kişinin adını yaz.</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if secili_kisi %}
+<!-- Sohbet Ayarları -->
+<div class="modal fade" id="sohbetAyarModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title fw-bold"><i class="bi bi-sliders me-2"></i>Sohbet ayarları</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    {{ m.avatar(secili_kisi.profil_fotografi, 72) }}
+                    <div class="mt-2">{{ m.kisi(secili_kisi) }}</div>
+                </div>
+                <label class="form-label">Takma ad</label>
+                <input class="form-control mb-1" id="takmaAdInput" maxlength="40" value="{{ aktif_takma_ad }}" placeholder="{{ secili_kisi.ad_soyad }}">
+                <div class="form-text mb-4">Takma ad yalnızca sana görünür.</div>
+                <label class="form-label">Sohbet teması</label>
+                <div class="tema-onizleme">
+                    {% set ornekler = {'default': ('var(--surface-2)', 'var(--gradient)'), 'cyber': ('#12021f', 'linear-gradient(135deg,#d946ef,#7c3aed)'), 'sunset': ('#1f0710', 'linear-gradient(135deg,#f43f5e,#f97316)'), 'emerald': ('#03170f', 'linear-gradient(135deg,#10b981,#0d9488)'), 'ocean': ('#031424', 'linear-gradient(135deg,#0ea5e9,#2563eb)'), 'carbon': ('#0c0c0d', 'linear-gradient(135deg,#52525b,#27272a)')} %}
+                    {% for anahtar, ad in SOHBET_TEMALARI.items() %}
+                    <div>
+                        <input type="radio" name="sohbetTema" id="tema_{{ anahtar }}" value="{{ anahtar }}" {{ 'checked' if aktif_tema == anahtar }}>
+                        <label for="tema_{{ anahtar }}" class="w-100"><div class="ornek" style="background:{{ ornekler[anahtar][0] }}"><i></i><i style="background:{{ ornekler[anahtar][1] }}"></i></div>{{ ad.split(' (')[0] }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-bs-dismiss="modal">Vazgeç</button>
+                <button class="btn btn-primary" id="ayarKaydet"><i class="bi bi-check2"></i>Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.DM = {
+        aliciId: {{ secili_kisi.id if secili_kisi else 'null' }},
+        varsayilanAd: {{ (secili_kisi.ad_soyad if secili_kisi else '')|tojson }},
+        mesajlar: {{ sohbet|tojson }},
+        sohbetler: {{ sohbetler|tojson }}
+    };
+</script>
+<script src="{{ url_for('static', filename='js/mesajlar.js') }}?v=2"></script>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}Topluluk Akışı{% endblock %}
+
+{% block content %}
+<div class="container-xl py-4 py-lg-5">
+    <div class="row g-4 justify-content-center">
+        <!-- SOL: Profil özeti -->
+        <aside class="col-lg-3 d-none d-lg-block">
+            <div class="yapiskan-yan">
+                {% if aktif_kullanici %}
+                <div class="kart overflow-hidden mb-3" data-reveal>
+                    <div style="height:70px;background:var(--gradient);{% if aktif_kullanici.kapak_fotografi %}background:url('{{ aktif_kullanici.kapak_fotografi }}') center/cover{% endif %}"></div>
+                    <div class="px-3 pb-3 text-center" style="margin-top:-36px">
+                        <a href="{{ url_for('profil', id=aktif_kullanici.id) }}">{{ m.avatar(aktif_kullanici.profil_fotografi, 72, halka=True) }}</a>
+                        <div class="mt-2">{{ m.kisi(aktif_kullanici) }}</div>
+                        <div class="small text-muted text-truncate">{{ aktif_kullanici.unvan or aktif_kullanici.biyografi or '' }}</div>
+                        <div class="d-flex justify-content-around mt-3 pt-3 border-top" style="border-color:var(--border)!important">
+                            <div><div class="fw-bold">{{ benim.gonderi }}</div><div class="small text-muted">Gönderi</div></div>
+                            <button class="btn-link-plain" data-takip-liste="{{ aktif_kullanici.id }}" data-tur="takipciler"><div class="fw-bold" style="color:var(--text);font-size:1rem">{{ benim.takipci }}</div><div class="small text-muted">Takipçi</div></button>
+                            <button class="btn-link-plain" data-takip-liste="{{ aktif_kullanici.id }}" data-tur="takip_edilenler"><div class="fw-bold" style="color:var(--text);font-size:1rem">{{ benim.takip }}</div><div class="small text-muted">Takip</div></button>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="kart kart-govde mb-3 cam" data-reveal>
+                    <h5 class="fw-bold">Topluluğa katıl</h5>
+                    <p class="text-muted small">Paylaşım yapmak, beğenmek ve mesajlaşmak için ücretsiz hesap oluştur.</p>
+                    <a href="{{ url_for('kayit') }}" class="btn btn-primary w-100 mb-2">Hesap oluştur</a>
+                    <a href="{{ url_for('giris', next=request.path) }}" class="btn btn-ghost w-100">Giriş yap</a>
+                </div>
+                {% endif %}
+                <div class="kart p-2" data-reveal style="--d:.05s">
+                    <div class="ayar-menu">
+                        <a href="{{ url_for('akis') }}" class="{{ 'aktif' if filtre == 'herkes' }}"><i class="bi bi-globe2"></i>Keşfet</a>
+                        {% if aktif_kullanici %}<a href="{{ url_for('akis', filtre='takip') }}" class="{{ 'aktif' if filtre == 'takip' }}"><i class="bi bi-people"></i>Takip ettiklerim</a>
+                        <a href="{{ url_for('mesaj_paneli') }}"><i class="bi bi-chat-dots"></i>Mesajlar</a>
+                        <a href="{{ url_for('profil', id=aktif_kullanici.id) }}#kaydedilenler"><i class="bi bi-bookmark"></i>Kaydedilenler</a>{% endif %}
+                        <a href="{{ url_for('haberler') }}"><i class="bi bi-newspaper"></i>Haberler</a>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ORTA: Akış -->
+        <div class="col-md-10 col-lg-6">
+            {% if aktif_kullanici %}
+            <div class="kart mb-4" data-reveal>
+                <div class="paylasim-kutu">
+                    {{ m.avatar(aktif_kullanici.profil_fotografi, 44) }}
+                    <div class="sahte-input" data-bs-toggle="modal" data-bs-target="#gonderiModal">Aklından ne geçiyor, {{ aktif_kullanici.ad_soyad.split(' ')[0] }}?</div>
+                </div>
+                <div class="d-flex border-top px-2" style="border-color:var(--border)!important">
+                    <button class="btn btn-link-plain flex-fill py-2" data-bs-toggle="modal" data-bs-target="#gonderiModal"><i class="bi bi-image text-success me-1"></i>Fotoğraf</button>
+                    <button class="btn btn-link-plain flex-fill py-2" data-bs-toggle="modal" data-bs-target="#gonderiModal"><i class="bi bi-lightbulb text-warning me-1"></i>Fikir</button>
+                    <button class="btn btn-link-plain flex-fill py-2" data-bs-toggle="modal" data-bs-target="#gonderiModal"><i class="bi bi-rocket-takeoff text-primary me-1"></i>Proje</button>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="sekmeler mb-4 d-lg-none">
+                <a href="{{ url_for('akis') }}" class="{{ 'aktif' if filtre == 'herkes' }}"><i class="bi bi-globe2"></i>Keşfet</a>
+                {% if aktif_kullanici %}<a href="{{ url_for('akis', filtre='takip') }}" class="{{ 'aktif' if filtre == 'takip' }}"><i class="bi bi-people"></i>Takip</a>{% endif %}
+            </div>
+
+            <div class="d-flex flex-column gap-4">
+                {% for gd in gonderiler %}
+                    {{ m.gonderi_kart(gd) }}
+                {% else %}
+                    {% if filtre == 'takip' %}
+                    {{ m.bos('bi-people', 'Akışın henüz boş', 'Takip ettiğin kişiler paylaşım yaptığında burada göreceksin.', 'Keşfet', url_for('akis')) }}
+                    {% else %}
+                    {{ m.bos('bi-chat-square-heart', 'Henüz paylaşım yok', 'Topluluğun ilk gönderisini paylaşan sen ol!') }}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- SAĞ: Öneriler ve haberler -->
+        <aside class="col-lg-3 d-none d-lg-block">
+            <div class="yapiskan-yan">
+                {% if oneriler %}
+                <div class="kart p-3 mb-3" data-reveal>
+                    <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+                        <h6 class="fw-bold m-0">Takip önerileri</h6>
+                    </div>
+                    {% for k in oneriler %}{{ m.kisi_satir(k, k.unvan or ('Onaylı hesap' if k.mavi_tik else 'Topluluk üyesi')) }}{% endfor %}
+                </div>
+                {% endif %}
+                {% if son_haberler %}
+                <div class="kart p-3" data-reveal style="--d:.05s">
+                    <h6 class="fw-bold mb-3 px-1">Gündem</h6>
+                    {% for h in son_haberler %}
+                    <a href="{{ url_for('haber_detay', id=h.id) }}" class="d-block kisi-satir text-reset">
+                        <div style="min-width:0">
+                            <div class="small text-muted">{{ h.firma_adi }} · {{ h.tarih|zaman_once }}</div>
+                            <div class="fw-semibold small line-clamp-2">{{ h.baslik }}</div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div class="small text-muted mt-3 px-2">
+                    <a href="{{ url_for('hakkimizda') }}" class="text-muted">Hakkımızda</a> · <a href="{{ url_for('iletisim') }}" class="text-muted">İletişim</a> · <a href="{{ url_for('ayarlar') }}" class="text-muted">Ayarlar</a><br>© 2026 Aronsan
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}

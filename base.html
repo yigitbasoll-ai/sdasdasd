@@ -1,0 +1,297 @@
+{% import 'macros.html' as m with context %}
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark" data-accent="blue" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{% block title %}Aronsan{% endblock %} | Aronsan Teknoloji</title>
+    <meta name="description" content="{% block description %}Aronsan — savunma sanayii, otonom sistemler ve havacılık teknolojileri geliştiren teknoloji takımı.{% endblock %}">
+    <meta name="theme-color" content="#060a13">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta property="og:title" content="{{ self.title() }} | Aronsan">
+    <meta property="og:description" content="{{ self.description() }}">
+    <meta property="og:image" content="{{ url_for('static', filename='logo.png', _external=True) }}">
+    <link rel="icon" href="{{ url_for('static', filename='logo.png') }}">
+    <script>
+        (function () {
+            try {
+                var d = document.documentElement, ls = localStorage;
+                var t = ls.getItem('aronsan_theme') || 'dark';
+                if (t === 'sistem') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+                d.dataset.theme = t;
+                d.dataset.accent = ls.getItem('aronsan_accent') || 'blue';
+                d.setAttribute('data-bs-theme', t === 'light' ? 'light' : 'dark');
+                if (ls.getItem('aronsan_motion') === 'reduce') d.dataset.motion = 'reduce';
+                if (ls.getItem('aronsan_fontsize')) d.dataset.fontsize = ls.getItem('aronsan_fontsize');
+            } catch (e) {}
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2">
+    {% block head %}{% endblock %}
+</head>
+<body class="{% if aktif_kullanici %}giris-yapildi{% endif %} {% block body_class %}{% endblock %}">
+<div id="sayfaIlerleme"></div>
+<div id="scrollIlerleme"></div>
+
+{% block nav %}
+{% set ep = request.endpoint %}
+<nav class="ana-nav" id="anaNav">
+    <div class="container-xl">
+        <a class="nav-logo" href="{{ url_for('index') }}" aria-label="Aronsan ana sayfa">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Aronsan">
+            <span class="marka">ARONSAN</span>
+        </a>
+
+        <ul class="nav-linkler ms-3">
+            <li><a href="{{ url_for('index') }}" class="{{ 'aktif' if ep == 'index' }}">Ana Sayfa</a></li>
+            <li><a href="{{ url_for('akis') }}" class="{{ 'aktif' if ep == 'akis' }}">Akış</a></li>
+            <li><a href="{{ url_for('haberler') }}" class="{{ 'aktif' if ep in ('haberler', 'haber_detay') }}">Haberler</a></li>
+            <li><a href="{{ url_for('projeler') }}" class="{{ 'aktif' if ep in ('projeler', 'proje_detay') }}">Projeler</a></li>
+            <li><a href="{{ url_for('ekibimiz') }}" class="{{ 'aktif' if ep in ('ekibimiz', 'uye_detay') }}">Ekibimiz</a></li>
+            <li><a href="{{ url_for('hakkimizda') }}" class="{{ 'aktif' if ep == 'hakkimizda' }}">Hakkımızda</a></li>
+            <li><a href="{{ url_for('iletisim') }}" class="{{ 'aktif' if ep == 'iletisim' }}">İletişim</a></li>
+        </ul>
+
+        <form class="nav-arama" action="{{ url_for('ara') }}" method="GET" role="search" autocomplete="off">
+            <i class="bi bi-search"></i>
+            <input id="aramaInput" name="q" class="form-control" type="search" placeholder="Kişi, haber veya proje ara..." aria-label="Ara">
+            <kbd class="d-none d-lg-inline">/</kbd>
+            <div id="aramaSonuc" class="arama-sonuc"></div>
+        </form>
+
+        <div class="nav-aksiyonlar {% if not aktif_kullanici %}ms-auto ms-md-0{% endif %}">
+            {% if aktif_kullanici %}
+                <button class="ikon-btn birincil gizle-mobil" data-bs-toggle="modal" data-bs-target="#gonderiModal" title="Yeni gönderi" aria-label="Yeni gönderi"><i class="bi bi-plus-lg"></i></button>
+
+                <div class="dropdown" id="bildirimDropdown">
+                    <button class="ikon-btn" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-label="Bildirimler" title="Bildirimler">
+                        <i class="bi bi-bell"></i>
+                        <span class="rozet-sayi" id="bildirimRozet" data-sayi="{{ okunmamis_bildirim }}">{{ okunmamis_bildirim if okunmamis_bildirim else '' }}</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end bildirim-panel">
+                        <div class="baslik">
+                            <h6 class="m-0 fw-bold">Bildirimler</h6>
+                            <button class="btn-link-plain" id="bildirimTemizle"><i class="bi bi-trash3 me-1"></i>Tümünü temizle</button>
+                        </div>
+                        <div class="bildirim-liste" id="bildirimListe">
+                            <div class="p-3"><div class="iskelet mb-2" style="height:46px"></div><div class="iskelet mb-2" style="height:46px"></div><div class="iskelet" style="height:46px"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('mesaj_paneli') }}" class="ikon-btn gizle-mobil" title="Mesajlar" aria-label="Mesajlar">
+                    <i class="bi bi-chat-dots"></i>
+                    <span class="rozet-sayi" data-mesaj-rozet data-sayi="{{ okunmamis_mesaj }}">{{ okunmamis_mesaj if okunmamis_mesaj else '' }}</span>
+                </a>
+
+                <div class="dropdown">
+                    <button class="nav-avatar-btn" data-bs-toggle="dropdown" aria-label="Hesap menüsü">
+                        <img src="{{ aktif_kullanici.profil_fotografi or VARSAYILAN_AVATAR }}" alt="" onerror="this.src='{{ url_for('static', filename='img/avatar.svg') }}'">
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end profil-menu">
+                        <li class="ust">
+                            {{ m.avatar(aktif_kullanici.profil_fotografi, 48, halka=aktif_kullanici.mavi_tik) }}
+                            <div style="min-width:0">
+                                {{ m.kisi(aktif_kullanici, link=False) }}
+                                <div class="small text-muted text-truncate">{{ aktif_kullanici.eposta }}</div>
+                            </div>
+                        </li>
+                        <li><a class="dropdown-item" href="{{ url_for('profil', id=aktif_kullanici.id) }}"><i class="bi bi-person"></i>Profilim</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('hesap_ayarlari') }}"><i class="bi bi-pencil-square"></i>Profili Düzenle</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('profil', id=aktif_kullanici.id) }}#kaydedilenler"><i class="bi bi-bookmark"></i>Kaydedilenler</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('ayarlar') }}"><i class="bi bi-gear"></i>Ayarlar</a></li>
+                        {% if aktif_kullanici.yetki == 'personel' %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin') }}" style="color:#f59e0b"><i class="bi bi-shield-lock"></i>Yönetim Paneli</a></li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><button class="dropdown-item" data-tema-degistir><i class="bi bi-circle-half"></i>Temayı değiştir</button></li>
+                        <li><a class="dropdown-item tehlike" href="{{ url_for('cikis') }}"><i class="bi bi-box-arrow-right"></i>Çıkış Yap</a></li>
+                    </ul>
+                </div>
+            {% else %}
+                <button class="ikon-btn gizle-mobil" data-tema-degistir title="Temayı değiştir" aria-label="Temayı değiştir"><i class="bi bi-circle-half"></i></button>
+                <a href="{{ url_for('giris') }}" class="btn btn-ghost btn-sm gizle-mobil">Giriş Yap</a>
+                <a href="{{ url_for('kayit') }}" class="btn btn-primary btn-sm">Katıl</a>
+            {% endif %}
+            <button class="ikon-btn mobil-menu-btn" id="mobilMenuAc" aria-label="Menü"><i class="bi bi-list"></i></button>
+        </div>
+    </div>
+</nav>
+
+<div class="mobil-panel" id="mobilPanel" aria-hidden="true">
+    <div class="icerik">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Aronsan" style="height:36px">
+            <button class="ikon-btn" id="mobilMenuKapat" aria-label="Kapat"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <form action="{{ url_for('ara') }}" class="input-ikon mb-3"><i class="bi bi-search"></i><input name="q" class="form-control" placeholder="Ara..."></form>
+        <a class="mobil-link {{ 'aktif' if ep == 'index' }}" href="{{ url_for('index') }}"><i class="bi bi-house"></i>Ana Sayfa</a>
+        <a class="mobil-link {{ 'aktif' if ep == 'akis' }}" href="{{ url_for('akis') }}"><i class="bi bi-grid-1x2"></i>Akış</a>
+        <a class="mobil-link {{ 'aktif' if ep == 'haberler' }}" href="{{ url_for('haberler') }}"><i class="bi bi-newspaper"></i>Haberler</a>
+        <a class="mobil-link {{ 'aktif' if ep == 'projeler' }}" href="{{ url_for('projeler') }}"><i class="bi bi-rocket-takeoff"></i>Projeler</a>
+        <a class="mobil-link {{ 'aktif' if ep == 'ekibimiz' }}" href="{{ url_for('ekibimiz') }}"><i class="bi bi-people"></i>Ekibimiz</a>
+        <a class="mobil-link {{ 'aktif' if ep == 'hakkimizda' }}" href="{{ url_for('hakkimizda') }}"><i class="bi bi-info-circle"></i>Hakkımızda</a>
+        <a class="mobil-link {{ 'aktif' if ep == 'iletisim' }}" href="{{ url_for('iletisim') }}"><i class="bi bi-envelope"></i>İletişim</a>
+        <hr>
+        {% if aktif_kullanici %}
+            <a class="mobil-link" href="{{ url_for('ayarlar') }}"><i class="bi bi-gear"></i>Ayarlar</a>
+            {% if aktif_kullanici.yetki == 'personel' %}<a class="mobil-link" href="{{ url_for('admin') }}"><i class="bi bi-shield-lock"></i>Yönetim Paneli</a>{% endif %}
+            <a class="mobil-link" href="{{ url_for('cikis') }}" style="color:var(--danger)"><i class="bi bi-box-arrow-right"></i>Çıkış Yap</a>
+        {% else %}
+            <a class="btn btn-ghost w-100 mb-2" href="{{ url_for('giris') }}">Giriş Yap</a>
+            <a class="btn btn-primary w-100 mb-2" href="{{ url_for('kayit') }}">Hesap Oluştur</a>
+            <a class="mobil-link" href="{{ url_for('personel_giris') }}"><i class="bi bi-shield-lock"></i>Personel Girişi</a>
+        {% endif %}
+        <button class="mobil-link w-100 border-0 bg-transparent" data-tema-degistir><i class="bi bi-circle-half"></i>Temayı değiştir</button>
+    </div>
+</div>
+{% endblock %}
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+{% block footer %}
+<footer class="site-footer">
+    <div class="container-xl">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <a href="{{ url_for('index') }}" class="nav-logo mb-3"><img src="{{ url_for('static', filename='logo.png') }}" alt="Aronsan"><span class="marka">ARONSAN</span></a>
+                <p class="text-muted pe-lg-5" style="line-height:1.7">Savunma sanayii vizyonuyla otonom sistemler, havacılık ve yazılım alanında yerli ve milli teknolojiler geliştiren bir teknoloji takımıyız.</p>
+                <div class="sosyal">
+                    <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                    <a href="#" aria-label="X"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                    <a href="#" aria-label="GitHub"><i class="bi bi-github"></i></a>
+                </div>
+            </div>
+            <div class="col-6 col-lg-2">
+                <h6>Kurumsal</h6>
+                <ul>
+                    <li><a href="{{ url_for('hakkimizda') }}">Hakkımızda</a></li>
+                    <li><a href="{{ url_for('ekibimiz') }}">Ekibimiz</a></li>
+                    <li><a href="{{ url_for('projeler') }}">Projeler</a></li>
+                    <li><a href="{{ url_for('iletisim') }}">İletişim</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-lg-2">
+                <h6>Platform</h6>
+                <ul>
+                    <li><a href="{{ url_for('akis') }}">Topluluk Akışı</a></li>
+                    <li><a href="{{ url_for('haberler') }}">Haberler</a></li>
+                    <li><a href="{{ url_for('mesaj_paneli') }}">Mesajlar</a></li>
+                    <li><a href="{{ url_for('personel_giris') }}">Personel Girişi</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-4">
+                <h6>Bültenimize katılın</h6>
+                <p class="text-muted small">Projelerimiz ve sektör haberlerinden ilk siz haberdar olun.</p>
+                <form class="d-flex gap-2" id="bultenForm">
+                    <input type="email" class="form-control" placeholder="E-posta adresiniz" required>
+                    <button class="btn btn-primary flex-shrink-0" type="submit"><i class="bi bi-send"></i></button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-alt d-flex flex-column flex-md-row justify-content-between gap-2">
+            <span>© {{ 2026 }} Aronsan Teknoloji Takımı. Tüm hakları saklıdır.</span>
+            <span>Türkiye'de <i class="bi bi-heart-fill text-danger"></i> ile geliştirildi.</span>
+        </div>
+    </div>
+</footer>
+{% endblock %}
+
+{% if aktif_kullanici %}
+<nav class="alt-nav" aria-label="Mobil navigasyon">
+    <a href="{{ url_for('index') }}" class="{{ 'aktif' if request.endpoint == 'index' }}" aria-label="Ana sayfa"><i class="bi bi-house{{ '-fill' if request.endpoint == 'index' }}"></i></a>
+    <a href="{{ url_for('akis') }}" class="{{ 'aktif' if request.endpoint == 'akis' }}" aria-label="Akış"><i class="bi bi-grid-1x2{{ '-fill' if request.endpoint == 'akis' }}"></i></a>
+    <a href="#" class="ekle" data-bs-toggle="modal" data-bs-target="#gonderiModal" aria-label="Gönderi oluştur"><i class="bi bi-plus-lg"></i></a>
+    <a href="{{ url_for('mesaj_paneli') }}" class="{{ 'aktif' if request.endpoint == 'mesaj_paneli' }}" aria-label="Mesajlar"><i class="bi bi-chat-dots{{ '-fill' if request.endpoint == 'mesaj_paneli' }}"></i><span class="rozet-sayi" data-mesaj-rozet data-sayi="{{ okunmamis_mesaj }}">{{ okunmamis_mesaj if okunmamis_mesaj else '' }}</span></a>
+    <a href="{{ url_for('profil', id=aktif_kullanici.id) }}" class="{{ 'aktif' if request.endpoint == 'profil' }}" aria-label="Profil"><i class="bi bi-person{{ '-fill' if request.endpoint == 'profil' }}"></i></a>
+</nav>
+
+<!-- Yeni Gönderi Modalı -->
+<div class="modal fade" id="gonderiModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="{{ url_for('gonderi_paylas') }}" method="POST" enctype="multipart/form-data" id="gonderiForm">
+                <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Yeni Gönderi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex gap-3 mb-3">
+                        {{ m.avatar(aktif_kullanici.profil_fotografi, 46) }}
+                        <div class="flex-grow-1">
+                            {{ m.kisi(aktif_kullanici, link=False) }}
+                            <textarea class="form-control border-0 px-0 mt-1 shadow-none bg-transparent" name="icerik" rows="4" maxlength="2200" placeholder="Neler oluyor? Bir proje, fikir ya da haber paylaş..." data-sayac="gonderiSayac" style="font-size:1.05rem"></textarea>
+                            <div class="karakter-sayac" id="gonderiSayac">0 / 2200</div>
+                        </div>
+                    </div>
+                    <div class="yukleme-onizleme mb-3" id="gonderiOnizleme">
+                        <img src="" alt="Önizleme">
+                        <button type="button" class="kaldir" aria-label="Görseli kaldır"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                    <label class="yukleme-alani d-block" id="gonderiYukleme">
+                        <input type="file" name="gorsel" accept="image/*">
+                        <i class="bi bi-images fs-2 d-block mb-2"></i>
+                        <span class="fw-semibold">Fotoğraf eklemek için tıkla veya sürükle</span>
+                        <div class="small mt-1">PNG, JPG, GIF, WEBP · en fazla 16 MB</div>
+                    </label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-primary px-4"><i class="bi bi-send"></i>Paylaş</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Gönderi Detay Modalı -->
+<div class="modal fade gonderi-modal" id="gonderiDetayModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content" id="gonderiDetayIcerik"></div>
+    </div>
+</div>
+
+<!-- Takipçi / Takip Listesi Modalı -->
+<div class="modal fade" id="takipModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="takipModalBaslik">Takipçiler</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body pt-2" style="min-height:240px">
+                <div class="input-ikon mb-2"><i class="bi bi-search"></i><input class="form-control" id="takipAra" placeholder="Ara..."></div>
+                <div id="takipListe"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="isik-kutusu" id="isikKutusu"><img src="" alt=""></div>
+<div class="toast-alani" id="toastAlani"></div>
+<button class="geri-don-btn" id="geriDon" aria-label="Yukarı çık"><i class="bi bi-arrow-up"></i></button>
+
+<script id="flashVeri" type="application/json">{{ get_flashed_messages(with_categories=true)|tojson }}</script>
+<script>
+    window.ARONSAN = {
+        kullanici: {% if aktif_kullanici %}{ id: {{ aktif_kullanici.id }}, ad: {{ aktif_kullanici.ad_soyad|tojson }}, personel: {{ 'true' if aktif_kullanici.yetki == 'personel' else 'false' }} }{% else %}null{% endif %},
+        avatarYedek: "{{ url_for('static', filename='img/avatar.svg') }}"
+    };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}?v=2"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

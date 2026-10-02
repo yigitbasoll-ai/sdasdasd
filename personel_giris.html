@@ -1,0 +1,30 @@
+{% extends 'auth_base.html' %}
+{% block title %}Personel Girişi{% endblock %}
+
+{% block sol %}
+<span class="ust-etiket" style="color:#f59e0b">Yetkili Erişim</span>
+<h2 class="mb-4">Aronsan <span class="gradient-text">yönetim paneli</span></h2>
+<div class="auth-ozellik"><i class="bi bi-speedometer2"></i><div><div class="fw-bold">Gösterge paneli</div><div class="text-muted small">Platform istatistiklerini tek bakışta gör.</div></div></div>
+<div class="auth-ozellik"><i class="bi bi-pencil-square"></i><div><div class="fw-bold">İçerik yönetimi</div><div class="text-muted small">Haber, proje ve ekip içeriklerini düzenle.</div></div></div>
+<div class="auth-ozellik"><i class="bi bi-patch-check"></i><div><div class="fw-bold">Kullanıcı yönetimi</div><div class="text-muted small">Mavi tik ve yetkileri yönet.</div></div></div>
+{% endblock %}
+
+{% block form %}
+<div class="ozellik-ikon" style="background:rgba(245,158,11,.14);color:#f59e0b;border-color:rgba(245,158,11,.3)"><i class="bi bi-shield-lock"></i></div>
+<h1 class="mb-2">Personel girişi</h1>
+<p class="text-muted mb-4">Bu alan yalnızca Aronsan ekip üyeleri içindir.</p>
+<form method="POST" data-yukleniyor>
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="mb-3">
+        <label class="form-label">Kurumsal e-posta</label>
+        <div class="input-ikon"><i class="bi bi-envelope"></i><input type="email" class="form-control" name="eposta" required autofocus value="{{ eposta or '' }}" placeholder="ad@aronsan.com"></div>
+    </div>
+    <div class="mb-4">
+        <label class="form-label">Şifre</label>
+        <div class="input-ikon"><i class="bi bi-lock"></i><input type="password" class="form-control" name="sifre" required placeholder="••••••••"><button type="button" class="sifre-goster" aria-label="Şifreyi göster"><i class="bi bi-eye"></i></button></div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg w-100"><i class="bi bi-unlock"></i>Panele giriş yap</button>
+</form>
+<div class="ayirici">veya</div>
+<a href="{{ url_for('giris') }}" class="btn btn-ghost w-100"><i class="bi bi-person"></i>Kullanıcı girişi</a>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+{% set ep = request.endpoint %}
+<div class="container-xl py-4 py-lg-5">
+    <div class="admin-sarmal">
+        <aside class="admin-menu">
+            <div class="kart p-2">
+                <div class="d-flex align-items-center gap-2 p-2 mb-1">
+                    <span class="ozellik-ikon mb-0" style="width:40px;height:40px;font-size:1.05rem;background:rgba(245,158,11,.14);color:#f59e0b;border-color:rgba(245,158,11,.3)"><i class="bi bi-shield-lock"></i></span>
+                    <div><div class="fw-bold">Yönetim</div><div class="small text-muted">Aronsan Paneli</div></div>
+                </div>
+                <nav class="ayar-menu">
+                    <a href="{{ url_for('admin') }}" class="{{ 'aktif' if ep == 'admin' }}"><i class="bi bi-speedometer2"></i>Genel bakış</a>
+                    <a href="{{ url_for('admin_kullanicilar') }}" class="{{ 'aktif' if ep == 'admin_kullanicilar' }}"><i class="bi bi-people"></i>Kullanıcılar</a>
+                    <a href="{{ url_for('admin_haberler') }}" class="{{ 'aktif' if ep in ('admin_haberler', 'haber_ekle') }}"><i class="bi bi-newspaper"></i>Haberler</a>
+                    <a href="{{ url_for('admin_projeler') }}" class="{{ 'aktif' if ep in ('admin_projeler', 'proje_ekle') }}"><i class="bi bi-rocket-takeoff"></i>Projeler</a>
+                    <a href="{{ url_for('admin_ekip') }}" class="{{ 'aktif' if ep in ('admin_ekip', 'personel_ekle') }}"><i class="bi bi-person-vcard"></i>Ekip</a>
+                    <a href="{{ url_for('admin_gonderiler') }}" class="{{ 'aktif' if ep == 'admin_gonderiler' }}"><i class="bi bi-images"></i>Gönderiler</a>
+                    <a href="{{ url_for('admin_destek') }}" class="{{ 'aktif' if ep == 'admin_destek' }}"><i class="bi bi-inbox"></i>Destek & İletişim</a>
+                    <a href="{{ url_for('index') }}"><i class="bi bi-box-arrow-up-right"></i>Siteye dön</a>
+                </nav>
+            </div>
+        </aside>
+        <div style="min-width:0">
+            {% block admin %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

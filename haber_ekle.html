@@ -1,0 +1,36 @@
+{% extends 'admin_base.html' %}
+{% block title %}{{ 'Haberi Düzenle' if kayit else 'Yeni Haber' }} · Yönetim{% endblock %}
+
+{% block admin %}
+<div class="mb-4" data-reveal>
+    <div class="ekmek mb-1"><a href="{{ url_for('admin_haberler') }}"><i class="bi bi-arrow-left"></i> Haberler</a></div>
+    <h1 class="fw-bold m-0" style="font-size:1.9rem">{{ 'Haberi düzenle' if kayit else 'Yeni haber yayınla' }}</h1>
+</div>
+<form method="POST" enctype="multipart/form-data" data-yukleniyor>
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <div class="kart kart-govde" data-reveal>
+                <label class="form-label">Haber başlığı *</label>
+                <input class="form-control form-control-lg mb-3" name="baslik" required maxlength="200" value="{{ kayit.baslik if kayit else '' }}" placeholder="Dikkat çekici bir başlık">
+                <label class="form-label">İçerik *</label>
+                <textarea class="form-control" name="icerik" rows="14" required data-sayac="haberSayac" maxlength="20000" placeholder="Haber metni...">{{ kayit.icerik if kayit else '' }}</textarea>
+                <div class="karakter-sayac mt-1" id="haberSayac"></div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="kart kart-govde mb-4" data-reveal style="--d:.05s">
+                <label class="form-label">Firma / Kaynak *</label>
+                <select class="form-select" name="firma_adi" required>
+                    {% set secili = kayit.firma_adi if kayit else '' %}
+                    <option value="" disabled {{ 'selected' if not secili }}>Firma seçin...</option>
+                    {% for f in FIRMALAR %}<option value="{{ f }}" {{ 'selected' if secili == f }}>{{ f }}</option>{% endfor %}
+                    {% if secili and secili not in FIRMALAR %}<option selected>{{ secili }}</option>{% endif %}
+                </select>
+            </div>
+            {% include 'admin_gorsel_alani.html' %}
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-4"><i class="bi bi-{{ 'check2' if kayit else 'send' }}"></i>{{ 'Değişiklikleri kaydet' if kayit else 'Haberi yayınla' }}</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

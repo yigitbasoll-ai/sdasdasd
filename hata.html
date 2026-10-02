@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}{{ baslik }}{% endblock %}
+
+{% block content %}
+<section class="hero" style="min-height:calc(100vh - var(--nav-h) - 200px)">
+    <div class="izgara-bg"></div>
+    <div class="hero-isik i1"></div>
+    <div class="hero-isik i2"></div>
+    <div class="container text-center">
+        <div class="hata-kod gradient-text" data-reveal="olcek">{{ kod }}</div>
+        <h1 class="fw-bold mb-3" style="font-size:clamp(1.8rem,4vw,2.6rem);--d:.08s" data-reveal>{{ baslik }}</h1>
+        <p class="text-2 fs-5 mx-auto mb-4" style="max-width:520px" data-reveal>{{ aciklama }}</p>
+        <div class="d-flex flex-wrap justify-content-center gap-2" data-reveal>
+            <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg"><i class="bi bi-house"></i>Ana sayfaya dön</a>
+            <button onclick="history.back()" class="btn btn-ghost btn-lg"><i class="bi bi-arrow-left"></i>Geri git</button>
+        </div>
+    </div>
+</section>
+{% endblock %}

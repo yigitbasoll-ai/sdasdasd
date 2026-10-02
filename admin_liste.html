@@ -1,0 +1,86 @@
+{% extends 'admin_base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}{{ baslik }} · Yönetim{% endblock %}
+
+{% block admin %}
+{% set yeni_link = {'haber': url_for('haber_ekle'), 'proje': url_for('proje_ekle'), 'ekip': url_for('personel_ekle')}.get(tur) %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4" data-reveal>
+    <div>
+        <h1 class="fw-bold mb-1" style="font-size:1.9rem">{{ baslik }}</h1>
+        <p class="text-muted m-0">{{ kayitlar|length }} kayıt</p>
+    </div>
+    <div class="d-flex gap-2">
+        <div class="input-ikon" style="min-width:240px"><i class="bi bi-search"></i><input class="form-control" id="listeAra" placeholder="Listede ara..."></div>
+        {% if yeni_link %}<a href="{{ yeni_link }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i>Yeni</a>{% endif %}
+    </div>
+</div>
+
+<div class="kart" data-reveal>
+    <div class="tablo-kutu">
+        <table class="tablo">
+            <thead>
+                <tr>
+                    <th style="width:72px"></th>
+                    <th>{{ 'İçerik' if tur == 'gonderi' else ('Ad Soyad' if tur == 'ekip' else 'Başlık') }}</th>
+                    <th>{% if tur == 'haber' %}Firma{% elif tur == 'proje' %}Durum{% elif tur == 'ekip' %}Departman{% else %}Paylaşan{% endif %}</th>
+                    <th>{% if tur in ('haber', 'gonderi') %}Etkileşim{% elif tur == 'proje' %}Tarih{% else %}Görev{% endif %}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="listeGovde">
+                {% for r in kayitlar %}
+                <tr data-ara="{{ ((r.baslik or '') ~ ' ' ~ (r.ad_soyad or '') ~ ' ' ~ (r.icerik or '') ~ ' ' ~ (r.yazar_ad or ''))|lower }}">
+                    <td>
+                        <div class="gorsel-kutu rounded-3" style="width:56px;height:44px">
+                            {% if r.gorsel_url %}<img src="{{ r.gorsel_url }}" alt="">{% else %}<div class="gorsel-yok w-100 h-100" style="font-size:1rem"><i class="bi bi-image"></i></div>{% endif %}
+                        </div>
+                    </td>
+                    {% if tur == 'haber' %}
+                        <td><a href="{{ url_for('haber_detay', id=r.id) }}" class="fw-semibold text-main line-clamp-2">{{ r.baslik }}</a><div class="small text-muted">{{ r.tarih|tarih_tr }}</div></td>
+                        <td><span class="etiket notr">{{ r.firma_adi }}</span></td>
+                        <td class="small text-nowrap"><i class="bi bi-eye"></i> {{ r.goruntulenme }} · <i class="bi bi-heart"></i> {{ r.begeni_sayisi }} · <i class="bi bi-chat"></i> {{ r.yorum_sayisi }}</td>
+                        <td class="text-end text-nowrap">
+                            <a href="{{ url_for('haber_ekle', id=r.id) }}" class="btn btn-sm btn-ghost" title="Düzenle"><i class="bi bi-pencil"></i></a>
+                            <form method="POST" action="{{ url_for('admin_haber_sil', id=r.id) }}" class="d-inline" data-onay="Haber ve tüm yorumları silinsin mi?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-sm btn-soft-danger" title="Sil"><i class="bi bi-trash3"></i></button></form>
+                        </td>
+                    {% elif tur == 'proje' %}
+                        <td><a href="{{ url_for('proje_detay', id=r.id) }}" class="fw-semibold text-main line-clamp-2">{{ r.baslik }}</a><div class="small text-muted">{{ r.kategori or 'Genel' }}</div></td>
+                        <td>{{ m.durum_etiketi(r.durum) }}</td>
+                        <td class="small text-nowrap">{{ r.tarih|tarih_tr }}</td>
+                        <td class="text-end text-nowrap">
+                            <a href="{{ url_for('proje_ekle', id=r.id) }}" class="btn btn-sm btn-ghost" title="Düzenle"><i class="bi bi-pencil"></i></a>
+                            <form method="POST" action="{{ url_for('admin_proje_sil', id=r.id) }}" class="d-inline" data-onay="Proje silinsin mi?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-sm btn-soft-danger" title="Sil"><i class="bi bi-trash3"></i></button></form>
+                        </td>
+                    {% elif tur == 'ekip' %}
+                        <td><a href="{{ url_for('uye_detay', id=r.id) }}" class="fw-semibold text-main">{{ r.ad_soyad }}</a>{% if r.kullanici_id %}<div class="small text-muted"><i class="bi bi-link-45deg"></i>Hesaba bağlı (#{{ r.kullanici_id }})</div>{% endif %}</td>
+                        <td><span class="etiket notr">{{ r.departman }}</span></td>
+                        <td class="small">{{ r.rutbe }}</td>
+                        <td class="text-end text-nowrap">
+                            <a href="{{ url_for('personel_ekle', id=r.id) }}" class="btn btn-sm btn-ghost" title="Düzenle"><i class="bi bi-pencil"></i></a>
+                            <form method="POST" action="{{ url_for('admin_personel_sil', id=r.id) }}" class="d-inline" data-onay="Ekip üyesi vitrinden kaldırılsın mı?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-sm btn-soft-danger" title="Sil"><i class="bi bi-trash3"></i></button></form>
+                        </td>
+                    {% else %}
+                        <td><span class="line-clamp-2 text-main" style="cursor:pointer" data-gonderi-ac="{{ r.id }}">{{ r.icerik or '(Yalnızca görsel)' }}</span><div class="small text-muted">{{ r.tarih|zaman_once }}</div></td>
+                        <td>{{ m.isim(r.kullanici_id, r.yazar_ad, r.yazar_tik) }}</td>
+                        <td class="small text-nowrap"><i class="bi bi-heart"></i> {{ r.begeni_sayisi }} · <i class="bi bi-chat"></i> {{ r.yorum_sayisi }}</td>
+                        <td class="text-end"><button class="btn btn-sm btn-soft-danger" data-gonderi-sil="{{ r.id }}" title="Sil"><i class="bi bi-trash3"></i></button></td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center text-muted py-5">Henüz kayıt yok.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('listeAra').addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLocaleLowerCase('tr');
+    document.querySelectorAll('#listeGovde tr[data-ara]').forEach((tr) => { tr.style.display = tr.dataset.ara.includes(q) ? '' : 'none'; });
+});
+document.querySelectorAll('[data-gonderi-sil]').forEach((b) => b.closest('tr').id = 'gonderi-' + b.dataset.gonderiSil);
+</script>
+{% endblock %}

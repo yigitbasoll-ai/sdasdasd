@@ -1,0 +1,24 @@
+<div class="kart kart-govde" data-reveal style="--d:.1s">
+    <label class="form-label">Görsel</label>
+    <div class="gorsel-kutu rounded-3 mb-3" style="aspect-ratio:16/10">
+        <img id="gorselOnizleme" src="{{ kayit.gorsel_url if kayit and kayit.gorsel_url else '' }}" alt="" style="{{ '' if kayit and kayit.gorsel_url else 'display:none' }}">
+        <div class="gorsel-yok w-100 h-100" id="gorselYok" style="{{ 'display:none' if kayit and kayit.gorsel_url else '' }}"><i class="bi bi-image"></i></div>
+    </div>
+    <label class="yukleme-alani d-block py-3 mb-2">
+        <input type="file" name="gorsel_dosya" accept="image/*" id="gorselDosya">
+        <i class="bi bi-cloud-arrow-up fs-4 d-block"></i><span class="small fw-semibold">Cihazdan yükle</span>
+    </label>
+    <div class="ayirici my-2">veya</div>
+    <input class="form-control" name="gorsel_url" id="gorselUrl" placeholder="https://... görsel bağlantısı" value="{{ kayit.gorsel_url if kayit and kayit.gorsel_url and not kayit.gorsel_url.startswith('/static') else '' }}">
+</div>
+<script>
+(function () {
+    const img = document.getElementById('gorselOnizleme'), yok = document.getElementById('gorselYok');
+    const goster = (src) => { img.src = src; img.style.display = src ? '' : 'none'; yok.style.display = src ? 'none' : ''; };
+    document.getElementById('gorselDosya').addEventListener('change', (e) => {
+        const f = e.target.files[0]; if (!f) return;
+        const r = new FileReader(); r.onload = (ev) => goster(ev.target.result); r.readAsDataURL(f);
+    });
+    document.getElementById('gorselUrl').addEventListener('change', (e) => { if (e.target.value.trim()) goster(e.target.value.trim()); });
+})();
+</script>

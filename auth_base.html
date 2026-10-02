@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block nav %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="auth-sarmal">
+    <aside class="auth-sol">
+        <div class="izgara-bg"></div>
+        <div class="hero-isik i1"></div>
+        <div class="hero-isik i2"></div>
+        <a href="{{ url_for('index') }}" class="nav-logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="Aronsan"><span class="marka">ARONSAN</span></a>
+        <div data-reveal>
+            {% block sol %}{% endblock %}
+        </div>
+        <div class="small text-muted">© 2026 Aronsan Teknoloji Takımı</div>
+    </aside>
+    <div class="auth-sag">
+        <div class="position-absolute top-0 end-0 p-3 d-flex gap-2">
+            <a href="{{ url_for('index') }}" class="btn btn-ghost btn-sm"><i class="bi bi-house"></i><span class="d-none d-sm-inline">Ana sayfa</span></a>
+            <button class="ikon-btn" data-tema-degistir title="Temayı değiştir" style="width:36px;height:36px"><i class="bi bi-circle-half"></i></button>
+        </div>
+        <div class="auth-form" data-reveal style="--d:.08s">
+            <a href="{{ url_for('index') }}" class="nav-logo d-lg-none mb-4"><img src="{{ url_for('static', filename='logo.png') }}" alt="Aronsan"><span class="marka" style="display:inline">ARONSAN</span></a>
+            {% block form %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

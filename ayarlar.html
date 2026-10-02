@@ -1,0 +1,343 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}Ayarlar{% endblock %}
+
+{% block content %}
+{% set k = aktif_kullanici %}
+<div class="container-xl py-4 py-lg-5">
+    <div class="mb-4" data-reveal>
+        <h1 class="fw-bold mb-1" style="font-size:2rem">Ayarlar</h1>
+        <p class="text-muted m-0">Görünümü, gizliliği ve hesap güvenliğini buradan yönet.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div class="kart p-2 yapiskan-yan" data-reveal>
+                <div class="d-none d-lg-flex align-items-center gap-3 p-2 mb-2 border-bottom pb-3" style="border-color:var(--border)!important">
+                    {{ m.avatar(k.profil_fotografi, 44) }}
+                    <div style="min-width:0">{{ m.kisi(k) }}<div class="small text-muted text-truncate">{{ k.eposta }}</div></div>
+                </div>
+                <nav class="ayar-menu" id="ayarMenu">
+                    <a href="#gorunum" data-sekme="gorunum"><i class="bi bi-palette"></i>Görünüm</a>
+                    <a href="#bildirim" data-sekme="bildirim"><i class="bi bi-bell"></i>Bildirimler</a>
+                    <a href="#gizlilik" data-sekme="gizlilik"><i class="bi bi-incognito"></i>Gizlilik</a>
+                    <a href="#guvenlik" data-sekme="guvenlik"><i class="bi bi-shield-lock"></i>Güvenlik</a>
+                    <a href="#destek" data-sekme="destek"><i class="bi bi-life-preserver"></i>Destek</a>
+                    <a href="{{ url_for('hesap_ayarlari') }}"><i class="bi bi-person-gear"></i>Profili düzenle</a>
+                    <a href="#hesap" data-sekme="hesap" class="tehlike"><i class="bi bi-exclamation-octagon"></i>Hesabı sil</a>
+                </nav>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <!-- GÖRÜNÜM -->
+            <section class="ayar-bolum" data-bolum="gorunum">
+                <div class="kart mb-4">
+                    <div class="kart-baslik"><div><h5>Tema</h5><div class="small text-muted">Tüm sayfalarda anında uygulanır.</div></div></div>
+                    <div class="kart-govde">
+                        <div class="row g-3" id="temaSecici">
+                            {% for anahtar, ad, bg, kart, vurgu in [
+                                ('dark', 'Gece Mavisi', '#060a13', '#121c31', '#3b82f6'),
+                                ('light', 'Açık', '#f3f6fb', '#ffffff', '#3b82f6'),
+                                ('gray', 'Modern Gri', '#17191d', '#282c32', '#3b82f6'),
+                                ('anthracite', 'Antrasit', '#0b0d10', '#1a1f26', '#3b82f6'),
+                                ('cyber', 'Cyberpunk', '#0c0218', '#200a39', '#d946ef'),
+                                ('contrast', 'Yüksek Kontrast', '#000000', '#111111', '#ffff00'),
+                                ('sistem', 'Sistem', 'linear-gradient(90deg,#060a13 50%,#f3f6fb 50%)', 'transparent', '#3b82f6')
+                            ] %}
+                            <div class="col-6 col-md-4 col-xl-3">
+                                <div class="tema-kart" data-tema="{{ anahtar }}" tabindex="0" role="button">
+                                    <div class="mini" style="background:{{ bg }}">
+                                        <div class="bar" style="background:{{ kart }};opacity:.9"></div>
+                                        <div class="satir"><div class="kutu" style="background:{{ kart }}"></div><div class="kutu" style="background:{{ kart }}"></div></div>
+                                        <div class="bar" style="width:45%;background:{{ vurgu }}"></div>
+                                    </div>
+                                    <span>{{ ad }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kart mb-4">
+                    <div class="kart-baslik"><div><h5>Vurgu rengi</h5><div class="small text-muted">Butonlar, bağlantılar ve vurgular için.</div></div></div>
+                    <div class="kart-govde">
+                        <div class="renk-secici" id="renkSecici">
+                            {% for anahtar, renk in [('blue', '#3b82f6'), ('cyan', '#06b6d4'), ('emerald', '#10b981'), ('violet', '#8b5cf6'), ('orange', '#f97316'), ('red', '#ef4444')] %}
+                            <button type="button" data-renk="{{ anahtar }}" style="background:{{ renk }}" aria-label="{{ anahtar }}"></button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kart mb-4">
+                    <div class="kart-baslik"><h5>Okunabilirlik</h5></div>
+                    <div class="kart-govde py-1">
+                        <div class="ayar-satir">
+                            <div><div class="fw-semibold">Yazı boyutu</div><div class="aciklama">Tüm metinleri büyüt veya küçült.</div></div>
+                            <div class="sekmeler" id="yaziBoyutu" style="min-width:240px">
+                                <button type="button" data-boyut="kucuk" style="font-size:.8rem">A</button>
+                                <button type="button" data-boyut="" >A</button>
+                                <button type="button" data-boyut="buyuk" style="font-size:1.1rem">A</button>
+                            </div>
+                        </div>
+                        <div class="ayar-satir">
+                            <div><div class="fw-semibold">Animasyonları azalt</div><div class="aciklama">Hareket hassasiyeti olanlar için geçiş efektlerini kapatır.</div></div>
+                            <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="hareketAzalt"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kart">
+                    <div class="kart-baslik"><div><h5>Arka plan görseli</h5><div class="small text-muted">Sayfaların arkasına hafif bir görsel ekle.</div></div></div>
+                    <div class="kart-govde">
+                        <div class="arkaplan-secici mb-3" id="arkaplanSecici">
+                            <button type="button" data-bg="" style="background:var(--surface-2)"><i class="bi bi-slash-circle d-block fs-4 mb-1"></i>Yok</button>
+                            {% for url in [
+                                'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600',
+                                'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1600',
+                                'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1600',
+                                'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1600',
+                                'https://images.unsplash.com/photo-1534723452862-4c874018d66d?q=80&w=1600'
+                            ] %}
+                            <button type="button" data-bg="{{ url }}" style="background-image:url('{{ url.replace('w=1600', 'w=300') }}')" aria-label="Arka plan {{ loop.index }}"></button>
+                            {% endfor %}
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-text" style="background:var(--surface-2);border-color:var(--border-strong);color:var(--muted)"><i class="bi bi-link-45deg"></i></span>
+                            <input class="form-control" id="ozelBg" placeholder="Özel görsel URL'si yapıştır...">
+                            <button class="btn btn-ghost" type="button" id="ozelBgUygula">Uygula</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BİLDİRİMLER -->
+            <section class="ayar-bolum" data-bolum="bildirim">
+                <div class="kart">
+                    <div class="kart-baslik"><div><h5>Bildirim tercihleri</h5><div class="small text-muted">Bu tercihler bu cihazda saklanır.</div></div></div>
+                    <div class="kart-govde py-1">
+                        <div class="ayar-satir">
+                            <div><div class="fw-semibold">Yeni mesaj uyarısı</div><div class="aciklama">Başka bir sayfadayken yeni mesaj gelince ekranda uyarı göster.</div></div>
+                            <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" data-yerel="aronsan_msj_toast" checked></div>
+                        </div>
+                        <div class="ayar-satir">
+                            <div><div class="fw-semibold">Sekme başlığında sayaç</div><div class="aciklama">Okunmamış bildirim sayısını tarayıcı sekmesinde göster.</div></div>
+                            <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" data-yerel="aronsan_baslik_sayac" checked></div>
+                        </div>
+                        <div class="ayar-satir">
+                            <div><div class="fw-semibold">Tüm bildirimleri temizle</div><div class="aciklama">Bildirim geçmişini kalıcı olarak siler.</div></div>
+                            <button class="btn btn-soft-danger btn-sm" id="bildirimleriSil"><i class="bi bi-trash3"></i>Temizle</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- GİZLİLİK -->
+            <section class="ayar-bolum" data-bolum="gizlilik">
+                <form method="POST" class="kart">
+                    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                    <input type="hidden" name="islem" value="gizlilik">
+                    <div class="kart-baslik"><h5>Gizlilik</h5></div>
+                    <div class="kart-govde">
+                        <div class="fw-semibold mb-1">Bana kimler mesaj gönderebilir?</div>
+                        <div class="aciklama small text-muted mb-3">Ekip üyeleri ve zaten konuştuğun kişiler her zaman yazabilir.</div>
+                        <div class="row g-2 mb-4">
+                            {% for deger, baslik, ikon in [('herkes', 'Herkes', 'bi-globe2'), ('takip', 'Takip ettiklerim', 'bi-people'), ('kimse', 'Hiç kimse', 'bi-slash-circle')] %}
+                            <div class="col-md-4">
+                                <input type="radio" class="btn-check" name="mesaj_izni" id="izin_{{ deger }}" value="{{ deger }}" {{ 'checked' if (k.mesaj_izni or 'herkes') == deger }}>
+                                <label class="tema-kart d-flex align-items-center gap-2 w-100 p-3 text-start" for="izin_{{ deger }}"><i class="bi {{ ikon }} fs-5 text-primary"></i><span>{{ baslik }}</span></label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="ayar-satir border-top" style="border-color:var(--border)!important">
+                            <div><div class="fw-semibold">Çevrimiçi durumumu göster</div><div class="aciklama">Kapatırsan "çevrimiçi" ve "son görülme" bilgin kimseye gösterilmez.</div></div>
+                            <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" name="cevrimici_goster" value="1" {{ 'checked' if k.cevrimici_goster }}></div>
+                        </div>
+                        <div class="text-end mt-3"><button class="btn btn-primary"><i class="bi bi-check2"></i>Kaydet</button></div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- GÜVENLİK -->
+            <section class="ayar-bolum" data-bolum="guvenlik">
+                <form method="POST" class="kart mb-4" data-yukleniyor>
+                    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                    <input type="hidden" name="islem" value="sifre">
+                    <div class="kart-baslik"><div><h5>Şifre değiştir</h5><div class="small text-muted">Güçlü bir şifre en az 10 karakter, harf, rakam ve sembol içerir.</div></div></div>
+                    <div class="kart-govde">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Mevcut şifre</label>
+                                <div class="input-ikon"><i class="bi bi-lock"></i><input type="password" class="form-control" name="mevcut_sifre" required autocomplete="current-password"><button type="button" class="sifre-goster"><i class="bi bi-eye"></i></button></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Yeni şifre</label>
+                                <div class="input-ikon"><i class="bi bi-key"></i><input type="password" class="form-control" name="yeni_sifre" required minlength="6" autocomplete="new-password" data-sifre-guc="ayarGuc"><button type="button" class="sifre-goster"><i class="bi bi-eye"></i></button></div>
+                                <div class="sifre-guc" id="ayarGuc"><div></div></div><small id="ayarGucMetin" class="fw-semibold"></small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Yeni şifre (tekrar)</label>
+                                <div class="input-ikon"><i class="bi bi-key"></i><input type="password" class="form-control" name="yeni_sifre_tekrar" required minlength="6" autocomplete="new-password"><button type="button" class="sifre-goster"><i class="bi bi-eye"></i></button></div>
+                            </div>
+                        </div>
+                        <div class="text-end mt-3"><button type="submit" class="btn btn-primary"><i class="bi bi-shield-check"></i>Şifreyi güncelle</button></div>
+                    </div>
+                </form>
+
+                <form method="POST" class="kart mb-4" data-yukleniyor>
+                    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                    <input type="hidden" name="islem" value="eposta">
+                    <div class="kart-baslik"><div><h5>E-posta adresi</h5><div class="small text-muted">Şu an: <strong class="text-main">{{ k.eposta }}</strong></div></div></div>
+                    <div class="kart-govde">
+                        <div class="row g-3">
+                            <div class="col-md-6"><label class="form-label">Yeni e-posta</label><div class="input-ikon"><i class="bi bi-envelope"></i><input type="email" class="form-control" name="eposta" required></div></div>
+                            <div class="col-md-6"><label class="form-label">Şifren</label><div class="input-ikon"><i class="bi bi-lock"></i><input type="password" class="form-control" name="sifre" required><button type="button" class="sifre-goster"><i class="bi bi-eye"></i></button></div></div>
+                        </div>
+                        <div class="text-end mt-3"><button type="submit" class="btn btn-ghost">E-postayı güncelle</button></div>
+                    </div>
+                </form>
+
+                <div class="kart">
+                    <div class="kart-baslik"><h5>Oturum</h5></div>
+                    <div class="kart-govde py-1">
+                        <div class="ayar-satir">
+                            <div class="d-flex gap-3 align-items-center"><span class="ozellik-ikon mb-0" style="width:44px;height:44px;font-size:1.1rem"><i class="bi bi-laptop"></i></span><div><div class="fw-semibold">Bu cihaz</div><div class="aciklama">Son etkinlik: şimdi · Hesap yetkisi: {{ 'Personel' if k.yetki == 'personel' else 'Kullanıcı' }}</div></div></div>
+                            <a href="{{ url_for('cikis') }}" class="btn btn-ghost btn-sm"><i class="bi bi-box-arrow-right"></i>Çıkış yap</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DESTEK -->
+            <section class="ayar-bolum" data-bolum="destek">
+                <form method="POST" class="kart mb-4" data-yukleniyor>
+                    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                    <input type="hidden" name="islem" value="destek">
+                    <div class="kart-baslik"><div><h5>Destek ekibine yaz</h5><div class="small text-muted">Hata bildirimi, öneri veya mavi tik başvurusu.</div></div></div>
+                    <div class="kart-govde">
+                        <label class="form-label">Konu</label>
+                        <select class="form-select mb-3" name="konu">
+                            {% for konu in ['Hata bildirimi', 'Öneri', 'Mavi tik başvurusu', 'Hesap sorunu', 'İçerik şikayeti', 'Diğer'] %}<option>{{ konu }}</option>{% endfor %}
+                        </select>
+                        <label class="form-label">Mesaj</label>
+                        <textarea class="form-control" name="mesaj" rows="4" maxlength="2000" required placeholder="Sorununu veya önerini detaylıca anlat..."></textarea>
+                        <div class="text-end mt-3"><button type="submit" class="btn btn-primary"><i class="bi bi-send"></i>Gönder</button></div>
+                    </div>
+                </form>
+                <div class="kart">
+                    <div class="kart-baslik"><h5>Taleplerim</h5></div>
+                    {% if talepler %}
+                    <div class="tablo-kutu">
+                        <table class="tablo">
+                            <thead><tr><th>Konu</th><th>Mesaj</th><th>Tarih</th><th>Durum</th></tr></thead>
+                            <tbody>
+                                {% for t in talepler %}
+                                <tr>
+                                    <td class="fw-semibold text-main">{{ t.konu or 'Genel' }}</td>
+                                    <td><span class="line-clamp-2">{{ t.mesaj }}</span></td>
+                                    <td class="text-nowrap">{{ t.tarih|zaman_once }}</td>
+                                    <td>{% if t.durum == 'acik' %}<span class="etiket sari">Açık</span>{% else %}<span class="etiket yesil">Çözüldü</span>{% endif %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="bos-durum py-4"><p class="mb-0">Henüz bir destek talebin yok.</p></div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- HESAP SİL -->
+            <section class="ayar-bolum" data-bolum="hesap">
+                <form method="POST" class="kart tehlike-kutu" data-onay="Hesabın ve TÜM verilerin (gönderiler, mesajlar, takipler) kalıcı olarak silinecek. Emin misin?">
+                    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                    <input type="hidden" name="islem" value="hesap_sil">
+                    <div class="kart-govde">
+                        <div class="d-flex gap-3 mb-3">
+                            <span class="ozellik-ikon mb-0 flex-shrink-0" style="background:rgba(239,68,68,.12);color:var(--danger);border-color:rgba(239,68,68,.3)"><i class="bi bi-exclamation-octagon"></i></span>
+                            <div>
+                                <h5 class="fw-bold" style="color:var(--danger)">Hesabı kalıcı olarak sil</h5>
+                                <p class="text-2 mb-0">Bu işlem geri alınamaz. Profilin, gönderilerin, yorumların, mesajların ve takip ilişkilerin tamamen silinir.</p>
+                            </div>
+                        </div>
+                        <label class="form-label">Onaylamak için şifreni gir</label>
+                        <div class="input-ikon mb-3" style="max-width:420px"><i class="bi bi-lock"></i><input type="password" class="form-control" name="sifre" required><button type="button" class="sifre-goster"><i class="bi bi-eye"></i></button></div>
+                        <button type="submit" class="btn btn-danger"><i class="bi bi-trash3"></i>Hesabımı sil</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const { $, $$, toast, api, temaUygula, arkaplanUygula } = window.Aronsan;
+    const d = document.documentElement;
+
+    // Sekmeler
+    function sekmeAc(ad) {
+        if (!$(`[data-bolum="${ad}"]`)) ad = 'gorunum';
+        $$('[data-bolum]').forEach((b) => b.classList.toggle('aktif', b.dataset.bolum === ad));
+        $$('#ayarMenu [data-sekme]').forEach((a) => a.classList.toggle('aktif', a.dataset.sekme === ad));
+    }
+    $$('#ayarMenu [data-sekme]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); sekmeAc(a.dataset.sekme); history.replaceState(null, '', '?sekme=' + a.dataset.sekme); }));
+    sekmeAc(location.hash.slice(1) || '{{ sekme }}');
+
+    // Tema
+    const isaretle = () => {
+        const t = localStorage.getItem('aronsan_theme') || 'dark';
+        $$('#temaSecici .tema-kart').forEach((k) => k.classList.toggle('aktif', k.dataset.tema === t));
+        const a = localStorage.getItem('aronsan_accent') || 'blue';
+        $$('#renkSecici button').forEach((b) => b.classList.toggle('aktif', b.dataset.renk === a));
+        const f = localStorage.getItem('aronsan_fontsize') || '';
+        $$('#yaziBoyutu button').forEach((b) => b.classList.toggle('aktif', b.dataset.boyut === f));
+        $('#hareketAzalt').checked = localStorage.getItem('aronsan_motion') === 'reduce';
+        const bg = localStorage.getItem('aronsan_bg') || '';
+        $$('#arkaplanSecici button').forEach((b) => b.classList.toggle('aktif', b.dataset.bg === bg));
+    };
+    $$('#temaSecici .tema-kart').forEach((k) => {
+        const sec = () => { temaUygula(k.dataset.tema); isaretle(); toast('Tema uygulandı.', 'success'); };
+        k.addEventListener('click', sec);
+        k.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sec(); } });
+    });
+    $$('#renkSecici button').forEach((b) => b.addEventListener('click', () => {
+        localStorage.setItem('aronsan_accent', b.dataset.renk); d.dataset.accent = b.dataset.renk; isaretle();
+        document.dispatchEvent(new CustomEvent('aronsan:tema'));
+    }));
+    $$('#yaziBoyutu button').forEach((b) => b.addEventListener('click', () => {
+        if (b.dataset.boyut) { localStorage.setItem('aronsan_fontsize', b.dataset.boyut); d.dataset.fontsize = b.dataset.boyut; }
+        else { localStorage.removeItem('aronsan_fontsize'); delete d.dataset.fontsize; }
+        isaretle();
+    }));
+    $('#hareketAzalt').addEventListener('change', (e) => {
+        if (e.target.checked) { localStorage.setItem('aronsan_motion', 'reduce'); d.dataset.motion = 'reduce'; }
+        else { localStorage.removeItem('aronsan_motion'); delete d.dataset.motion; }
+    });
+    const bgUygula = (url) => { localStorage.setItem('aronsan_bg', url); arkaplanUygula(url); isaretle(); toast(url ? 'Arka plan uygulandı.' : 'Arka plan kaldırıldı.', 'success'); };
+    $$('#arkaplanSecici button').forEach((b) => b.addEventListener('click', () => bgUygula(b.dataset.bg)));
+    $('#ozelBgUygula').addEventListener('click', () => {
+        const u = $('#ozelBg').value.trim();
+        if (u && !/^https?:\/\//.test(u)) return toast('Geçerli bir görsel bağlantısı girin.', 'warning');
+        bgUygula(u);
+    });
+    isaretle();
+
+    // Yerel tercihler
+    $$('[data-yerel]').forEach((inp) => {
+        inp.checked = localStorage.getItem(inp.dataset.yerel) !== '0';
+        inp.addEventListener('change', () => { localStorage.setItem(inp.dataset.yerel, inp.checked ? '1' : '0'); toast('Tercih kaydedildi.', 'success'); });
+    });
+    $('#bildirimleriSil').addEventListener('click', async () => {
+        if (!confirm('Tüm bildirimler silinsin mi?')) return;
+        const v = await api('/api/bildirim/sil_tumu', { method: 'POST' });
+        if (v.status === 'success') { toast('Bildirimler temizlendi.', 'success'); window.Aronsan.rozetGuncelle('#bildirimRozet', 0); }
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,154 @@
+{# ============ ORTAK ARAYÜZ MAKROLARI ============ #}
+
+{# Mavi tik — tüm sitede tek kaynak #}
+{% macro tik(deger) -%}
+{%- if deger %}<i class="bi bi-patch-check-fill mavi-tik" title="Onaylı hesap" aria-label="Onaylı hesap"></i>{% endif -%}
+{%- endmacro %}
+
+{% macro avatar(url, boyut=40, cevrimici=False, halka=False, cls='') -%}
+<span class="avatar {% if halka %}halka{% endif %} {{ cls }}" style="--s:{{ boyut }}px">
+    <img src="{{ url or VARSAYILAN_AVATAR }}" alt="" loading="lazy" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/avatar.svg') }}'">
+    {%- if cevrimici %}<span class="cevrimici-nokta" title="Çevrimiçi"></span>{% endif -%}
+</span>
+{%- endmacro %}
+
+{# Kullanıcı adı + mavi tik (+ opsiyonel personel rozeti) #}
+{% macro isim(id, ad, mavi_tik, link=True, cls='', personel=False) -%}
+{%- if link -%}
+<a href="{{ url_for('profil', id=id) }}" class="kisi-isim {{ cls }}"><span>{{ ad }}</span>{{ tik(mavi_tik) }}{% if personel %}<span class="personel-rozet">EKİP</span>{% endif %}</a>
+{%- else -%}
+<span class="kisi-isim {{ cls }}"><span>{{ ad }}</span>{{ tik(mavi_tik) }}{% if personel %}<span class="personel-rozet">EKİP</span>{% endif %}</span>
+{%- endif -%}
+{%- endmacro %}
+
+{% macro kisi(k, link=True, cls='') -%}
+{{ isim(k.id, k.ad_soyad, k.mavi_tik, link, cls, k.yetki == 'personel') }}
+{%- endmacro %}
+
+{# Takip önerisi / kişi listesi satırı #}
+{% macro kisi_satir(k, alt=None, takip_butonu=True) -%}
+<div class="kisi-satir">
+    <a href="{{ url_for('profil', id=k.id) }}">{{ avatar(k.profil_fotografi, 44, cevrimici_mi(k)) }}</a>
+    <div class="bilgi">
+        {{ kisi(k) }}
+        <div class="alt">{{ alt if alt is not none else (k.unvan or k.biyografi or '') }}</div>
+    </div>
+    {% if takip_butonu and aktif_kullanici and aktif_kullanici.id != k.id %}
+    <button class="btn btn-sm btn-outline-primary btn-pill" data-takip="{{ k.id }}">Takip Et</button>
+    {% endif %}
+</div>
+{%- endmacro %}
+
+{# Haber kartı #}
+{% macro haber_kart(h, gecikme=0) -%}
+<article class="kart kart-hover haber-kart parlama" data-reveal style="--d: {{ gecikme }}s">
+    <a href="{{ url_for('haber_detay', id=h.id) }}" class="gorsel-kutu d-block">
+        {% if h.gorsel_url %}<img src="{{ h.gorsel_url }}" alt="{{ h.baslik }}" loading="lazy">{% else %}<div class="gorsel-yok w-100 h-100"><i class="bi bi-newspaper"></i></div>{% endif %}
+        <span class="ust-sol etiket cam-etiket"><i class="bi bi-building"></i>{{ h.firma_adi }}</span>
+    </a>
+    <div class="govde">
+        <div class="small text-muted mb-2"><i class="bi bi-calendar3 me-1"></i>{{ h.tarih|tarih_tr }}</div>
+        <h5 class="line-clamp-2"><a href="{{ url_for('haber_detay', id=h.id) }}">{{ h.baslik }}</a></h5>
+        <p class="ozet line-clamp-2 mb-3">{{ h.icerik }}</p>
+        <div class="alt">
+            <div class="meta-ikonlar">
+                <span title="Beğeni"><i class="bi bi-heart"></i>{{ (h.begeni_sayisi if h.begeni_sayisi is defined else h.begeni) or 0 }}</span>
+                <span title="Yorum"><i class="bi bi-chat"></i>{{ h.yorum_sayisi or 0 }}</span>
+                <span title="Görüntülenme"><i class="bi bi-eye"></i>{{ (h.goruntulenme or 0)|sayi }}</span>
+            </div>
+            <a href="{{ url_for('haber_detay', id=h.id) }}" class="fw-semibold small">Oku <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </div>
+</article>
+{%- endmacro %}
+
+{# Proje kartı #}
+{% macro proje_kart(p, gecikme=0) -%}
+<article class="kart kart-hover proje-kart parlama" data-reveal style="--d: {{ gecikme }}s">
+    <a href="{{ url_for('proje_detay', id=p.id) }}" class="gorsel-kutu d-block">
+        {% if p.gorsel_url %}<img src="{{ p.gorsel_url }}" alt="{{ p.baslik }}" loading="lazy">{% else %}<div class="gorsel-yok w-100 h-100"><i class="bi bi-cpu"></i></div>{% endif %}
+        <div class="gorsel-ust">
+            <div class="d-flex gap-2 mb-2">
+                {% if p.kategori %}<span class="etiket cam-etiket">{{ p.kategori }}</span>{% endif %}
+                {{ durum_etiketi(p.durum) }}
+            </div>
+            <h4 class="line-clamp-2">{{ p.baslik }}</h4>
+        </div>
+    </a>
+    <div class="kart-govde">
+        <p class="text-2 line-clamp-3 mb-3">{{ p.icerik }}</p>
+        <a href="{{ url_for('proje_detay', id=p.id) }}" class="fw-semibold">Projeyi incele <i class="bi bi-arrow-right"></i></a>
+    </div>
+</article>
+{%- endmacro %}
+
+{% macro durum_etiketi(durum) -%}
+{%- set d = durum or 'Geliştirme' -%}
+<span class="etiket {% if d == 'Tamamlandı' %}yesil{% elif d == 'Test' %}sari{% elif d == 'Planlama' %}notr{% endif %}" style="backdrop-filter: blur(8px)">
+    <i class="bi {% if d == 'Tamamlandı' %}bi-check2-circle{% elif d == 'Test' %}bi-activity{% elif d == 'Planlama' %}bi-pencil-square{% else %}bi-gear-wide-connected{% endif %}"></i>{{ d }}
+</span>
+{%- endmacro %}
+
+{# Akış gönderi kartı #}
+{% macro gonderi_kart(gd, gecikme=0) -%}
+<article class="kart gonderi-kart" id="gonderi-{{ gd.id }}" data-reveal style="--d: {{ gecikme }}s">
+    <div class="ust">
+        <a href="{{ url_for('profil', id=gd.kullanici_id) }}">{{ avatar(gd.yazar_foto, 42, halka=gd.yazar_tik) }}</a>
+        <div class="flex-grow-1" style="min-width:0">
+            {{ isim(gd.kullanici_id, gd.yazar_ad, gd.yazar_tik) }}
+            <div class="small text-muted">{{ gd.tarih|zaman_once }}</div>
+        </div>
+        {% if aktif_kullanici and (aktif_kullanici.id == gd.kullanici_id or aktif_kullanici.yetki == 'personel') %}
+        <div class="dropdown">
+            <button class="btn-link-plain fs-5 px-2" data-bs-toggle="dropdown" aria-label="Seçenekler"><i class="bi bi-three-dots"></i></button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                {% if aktif_kullanici.id == gd.kullanici_id %}<li><button class="dropdown-item" data-gonderi-duzenle="{{ gd.id }}"><i class="bi bi-pencil"></i>Düzenle</button></li>{% endif %}
+                <li><button class="dropdown-item" data-kopyala="{{ url_for('profil', id=gd.kullanici_id, gonderi=gd.id, _external=True) }}"><i class="bi bi-link-45deg"></i>Bağlantıyı kopyala</button></li>
+                <li><button class="dropdown-item tehlike" data-gonderi-sil="{{ gd.id }}"><i class="bi bi-trash3"></i>Sil</button></li>
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+    {% if gd.gorsel_url %}
+        {% if gd.icerik %}<div class="metin-kutu" data-gonderi-metin>{{ gd.icerik }}</div>{% endif %}
+        <div class="medya" data-gonderi-ac="{{ gd.id }}" data-cift-begen="{{ gd.id }}">
+            <img src="{{ gd.gorsel_url }}" alt="" loading="lazy">
+            <i class="bi bi-heart-fill cift-tik-kalp"></i>
+        </div>
+    {% else %}
+        <div class="metin-kutu buyuk" data-gonderi-metin data-gonderi-ac="{{ gd.id }}">{{ gd.icerik }}</div>
+    {% endif %}
+    <div class="aksiyonlar">
+        <button class="begen-btn {% if gd.begendim %}aktif{% endif %}" data-gonderi-begen="{{ gd.id }}" aria-label="Beğen"><i class="bi {% if gd.begendim %}bi-heart-fill{% else %}bi-heart{% endif %}"></i></button>
+        <button class="aksiyon-btn" data-gonderi-ac="{{ gd.id }}" aria-label="Yorum yap"><i class="bi bi-chat"></i></button>
+        <button class="aksiyon-btn" data-kopyala="{{ url_for('profil', id=gd.kullanici_id, gonderi=gd.id, _external=True) }}" aria-label="Paylaş"><i class="bi bi-send"></i></button>
+    </div>
+    <div class="sayac"><span data-begeni-sayi="{{ gd.id }}">{{ gd.begeni_sayisi }}</span> beğenme</div>
+    <button class="yorum-link" data-gonderi-ac="{{ gd.id }}">
+        {% if gd.yorum_sayisi %}{{ gd.yorum_sayisi }} yorumun tümünü gör{% else %}Yorum ekle...{% endif %}
+    </button>
+</article>
+{%- endmacro %}
+
+{% macro bos(ikon, baslik, aciklama='', buton_metin=None, buton_link=None) -%}
+<div class="bos-durum" data-reveal>
+    <div class="ikon"><i class="bi {{ ikon }}"></i></div>
+    <h5>{{ baslik }}</h5>
+    {% if aciklama %}<p class="mb-0">{{ aciklama }}</p>{% endif %}
+    {% if buton_metin %}<a href="{{ buton_link }}" class="btn btn-primary mt-3">{{ buton_metin }}</a>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro sayfa_hero(ust, baslik, aciklama, ekmek=None) -%}
+<section class="sayfa-hero text-center">
+    <div class="izgara-bg"></div>
+    <div class="hero-isik i1"></div>
+    <div class="hero-isik i2"></div>
+    <div class="container">
+        <div class="ekmek" data-reveal><a href="{{ url_for('index') }}"><i class="bi bi-house"></i> Ana Sayfa</a><i class="bi bi-chevron-right small"></i><span>{{ ekmek or ust }}</span></div>
+        <div data-reveal style="--d:.05s"><span class="ust-etiket">{{ ust }}</span></div>
+        <h1 data-reveal style="--d:.1s">{{ baslik|safe }}</h1>
+        <p data-reveal style="--d:.18s">{{ aciklama }}</p>
+    </div>
+</section>
+{%- endmacro %}
